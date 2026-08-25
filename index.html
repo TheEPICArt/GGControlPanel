@@ -427,6 +427,54 @@ body {
     font-size: 12px;
     font-weight: bold;
 }
+
+.completedPuzzle {
+    position: relative;
+}
+
+.completedPuzzleTime {
+    color: #60A080;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: text;
+}
+
+.completedPuzzle:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.undoButton {
+    display: none;
+    margin-left: 8px;
+    padding: 3px 7px;
+    border: 1px solid #a44;
+    border-radius: 4px;
+    background: #722;
+    color: white;
+    font-size: 11px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.completedPuzzle:hover .undoButton {
+    display: inline-block;
+}
+
+.undoButton:hover {
+    background: #a33;
+}
+
+.completedPuzzleTimeInput {
+    width: 55px;
+    padding: 2px 4px;
+    border: 1px solid #60A080;
+    border-radius: 4px;
+    background: #222;
+    color: white;
+    text-align: center;
+    font-size: 12px;
+    font-weight: bold;
+}
 /* =========================================================
    OTHER ORIGINAL STYLES
    ========================================================= */
@@ -1112,7 +1160,212 @@ function completePuzzle(puzzleName) {
 
 }
 
+/* =========================================================
+   UNDO PUZZLE
+   ========================================================= */
 
+function undoPuzzle(puzzleName) {
+
+    if (!currentRoom) return;
+
+    const room = rooms[currentRoom];
+
+    /*
+     * Find this puzzle and every puzzle that
+     * directly or indirectly depends on it.
+     */
+
+    const toRemove = new Set([puzzleName]);
+
+    let changed = true;
+
+    while (changed) {
+
+        changed = false;
+
+        room.puzzles.forEach(puzzle => {
+
+            if (toRemove.has(puzzle.name)) {
+                return;
+            }
+
+            /*
+             * If any prerequisite is being removed,
+             * this puzzle has to be removed too.
+             */
+
+            if (
+                puzzle.requires.some(
+                    requirement =>
+                        toRemove.has(requirement)
+                )
+            ) {
+
+                toRemove.add(puzzle.name);
+                changed = true;
+
+            }
+
+        });
+
+    }
+
+    /*
+     * Remove all affected puzzles.
+     */
+
+    completedPuzzles =
+        completedPuzzles.filter(
+            name => !toRemove.has(name)
+        );
+
+    /*
+     * Remove their saved completion times too.
+     */
+
+    toRemove.forEach(name => {
+        delete puzzleCompletionTimes[name];
+    });
+
+    console.log(
+        "Undid puzzles:",
+        [...toRemove]
+    );
+
+    renderPuzzles();
+
+}
+
+/* =========================================================
+   EDIT PUZZLE TIME
+   ========================================================= */
+
+function editPuzzleTime(puzzleName, timeElement) {
+
+    /*
+     * Don't create another input if one already exists.
+     */
+
+    if (
+        timeElement.querySelector(
+            ".completedPuzzleTimeInput"
+        )
+    ) {
+        return;
+    }
+
+    const currentTime =
+        formatPuzzleTime(
+            puzzleCompletionTimes[puzzleName]
+        );
+
+    const input =
+        document.createElement("input");
+
+    input.className =
+        "completedPuzzleTimeInput";
+
+    input.type = "text";
+
+    input.value = currentTime;
+
+    input.maxLength = 5;
+
+    timeElement.textContent = "";
+
+    timeElement.appendChild(input);
+
+    input.focus();
+
+    input.select();
+
+
+    function saveTime() {
+
+        const value =
+            input.value.trim();
+
+        /*
+         * Require MM:SS
+         */
+
+        const match =
+            value.match(
+                /^(\d+):([0-5]\d)$/
+            );
+
+        if (!match) {
+
+            /*
+             * Invalid input:
+             * restore the old value.
+             */
+
+            timeElement.textContent =
+                formatPuzzleTime(
+                    puzzleCompletionTimes[puzzleName]
+                );
+
+            return;
+
+        }
+
+        const minutes =
+            parseInt(match[1], 10);
+
+        const seconds =
+            parseInt(match[2], 10);
+
+        puzzleCompletionTimes[puzzleName] =
+            minutes * 60 + seconds;
+
+        timeElement.textContent =
+            formatPuzzleTime(
+                puzzleCompletionTimes[puzzleName]
+            );
+
+        console.log(
+            "Updated puzzle time:",
+            puzzleName,
+            formatPuzzleTime(
+                puzzleCompletionTimes[puzzleName]
+            )
+        );
+
+    }
+
+
+    input.addEventListener(
+        "keydown",
+        event => {
+
+            if (event.key === "Enter") {
+
+                saveTime();
+
+            }
+
+            if (event.key === "Escape") {
+
+                timeElement.textContent =
+                    formatPuzzleTime(
+                        puzzleCompletionTimes[
+                            puzzleName
+                        ]
+                    );
+
+            }
+
+        }
+    );
+
+
+    input.addEventListener(
+        "blur",
+        saveTime
+    );
+
+}
 /* =========================================================
    FORMAT TIMER VALUE
    ========================================================= */
@@ -1347,71 +1600,151 @@ function renderPuzzles() {
        ===================================================== */
 
     completedPuzzles.forEach(
-        puzzleName => {
+    puzzleName => {
 
-            const row =
-                document.createElement(
-                    "div"
-                );
+        const row =
+            document.createElement(
+                "div"
+            );
 
-
-            row.className =
-                "completedPuzzle";
-
-
-            const name =
-                document.createElement(
-                    "span"
-                );
+        row.className =
+            "completedPuzzle";
 
 
-            name.className =
-                "completedPuzzleName";
+        /*
+         * Puzzle name
+         */
+
+        const name =
+            document.createElement(
+                "span"
+            );
+
+        name.className =
+            "completedPuzzleName";
+
+        name.textContent =
+            puzzleName;
 
 
-            name.textContent =
-                puzzleName;
+        /*
+         * Right side of the row
+         */
+
+        const rightSide =
+            document.createElement(
+                "span"
+            );
+
+        rightSide.style.display =
+            "flex";
+
+        rightSide.style.alignItems =
+            "center";
 
 
-            const time =
-                document.createElement(
-                    "span"
-                );
+        /*
+         * Completion time
+         */
 
+        const time =
+            document.createElement(
+                "span"
+            );
 
-            time.className =
-                "completedPuzzleTime";
+        time.className =
+            "completedPuzzleTime";
 
-
-            /*
-             * Display the amount of time
-             * remaining when completed.
-             */
-
-            time.textContent =
-                formatPuzzleTime(
-                    puzzleCompletionTimes[
-                        puzzleName
-                    ]
-                );
-
-
-            row.appendChild(
-                name
+        time.textContent =
+            formatPuzzleTime(
+                puzzleCompletionTimes[
+                    puzzleName
+                ]
             );
 
 
-            row.appendChild(
-                time
+        /*
+         * Clicking the time allows it
+         * to be manually edited.
+         */
+
+        time.addEventListener(
+            "click",
+            event => {
+
+                event.stopPropagation();
+
+                editPuzzleTime(
+                    puzzleName,
+                    time
+                );
+
+            }
+        );
+
+
+        /*
+         * Undo button
+         */
+
+        const undo =
+            document.createElement(
+                "button"
             );
 
+        undo.className =
+            "undoButton";
 
-            completedContainer.appendChild(
-                row
-            );
+        undo.textContent =
+            "Undo";
 
-        }
-    );
+        undo.title =
+            "Undo this puzzle and everything that depends on it";
+
+
+        undo.addEventListener(
+            "click",
+            event => {
+
+                /*
+                 * Don't let clicking Undo
+                 * trigger anything else.
+                 */
+
+                event.stopPropagation();
+
+                undoPuzzle(
+                    puzzleName
+                );
+
+            }
+        );
+
+
+        rightSide.appendChild(
+            time
+        );
+
+        rightSide.appendChild(
+            undo
+        );
+
+
+        row.appendChild(
+            name
+        );
+
+        row.appendChild(
+            rightSide
+        );
+
+
+        completedContainer.appendChild(
+            row
+        );
+
+    }
+);
 
 }
 
