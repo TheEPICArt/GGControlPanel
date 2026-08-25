@@ -581,6 +581,8 @@ function startPtz(command) {
 
     stopPtz();
 
+    command = getRoomAdjustedCommand(command);
+
     sendCommand(command, ip1);
 
 }
@@ -589,6 +591,8 @@ function startPtz(command) {
 function startPtz2(command) {
 
     stopPtz();
+
+    command = getRoomAdjustedCommand(command);
 
     sendCommand(command, ip2);
 
@@ -606,6 +610,47 @@ function stopPtz() {
 
 
 /* =========================================================
+   ROOM-SPECIFIC PTZ DIRECTION
+   ========================================================= */
+
+function getRoomAdjustedCommand(command) {
+
+    /*
+     * Heist cameras are physically mounted/oriented
+     * opposite to the other rooms.
+     *
+     * Therefore, reverse the directional controls
+     * only when Heist is selected.
+     */
+
+    if (currentRoom !== "heist") {
+        return command;
+    }
+
+
+    const reverseMap = {
+
+        ptzMoveUp: "ptzMoveDown",
+        ptzMoveDown: "ptzMoveUp",
+
+        ptzMoveLeft: "ptzMoveRight",
+        ptzMoveRight: "ptzMoveLeft",
+
+        ptzMoveTopLeft: "ptzMoveBottomRight",
+        ptzMoveTopRight: "ptzMoveBottomLeft",
+
+        ptzMoveBottomLeft: "ptzMoveTopRight",
+        ptzMoveBottomRight: "ptzMoveTopLeft"
+
+    };
+
+
+    return reverseMap[command] || command;
+
+}
+
+
+/* =========================================================
    CAMERA COMMANDS
    ========================================================= */
 
@@ -615,6 +660,7 @@ function sendCommand(command, ip) {
 
         ptzMoveUp: 0,
         ptzMoveDown: 2,
+
         ptzMoveLeft: 6,
         ptzMoveRight: 4,
 
@@ -625,6 +671,7 @@ function sendCommand(command, ip) {
         ptzMoveBottomRight: 92,
 
         ptzReset: 25,
+
         ptzStopRun: 1
 
     };
@@ -663,7 +710,11 @@ function sendCommand(command, ip) {
 
     console.log(
         "Sending command:",
-        url
+        command,
+        "→",
+        cmdValue,
+        "to",
+        ip
     );
 
 
