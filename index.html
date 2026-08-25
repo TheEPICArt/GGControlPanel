@@ -245,7 +245,8 @@ body {
 
 #puzzlePanel {
     left: 30px;
-    top: 600px;
+    bottom: 30px;
+    top: auto;
     width: 320px;
 }
 
@@ -254,15 +255,57 @@ body {
     border-radius: 0 0 12px 12px;
     padding: 12px;
     color: white;
-    max-height: calc(100vh - 80px);
-    overflow-y: auto;
 }
+
+
+/* =========================================================
+   AVAILABLE PUZZLES
+   ========================================================= */
 
 .puzzleSectionTitle {
     font-weight: bold;
     font-size: 18px;
     margin-bottom: 10px;
 }
+
+
+/*
+ * This is the scrollable area containing
+ * available puzzles.
+ */
+
+#availablePuzzles {
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 5px;
+}
+
+
+/* Scrollbar */
+
+#availablePuzzles::-webkit-scrollbar {
+    width: 8px;
+}
+
+#availablePuzzles::-webkit-scrollbar-track {
+    background: #222;
+    border-radius: 5px;
+}
+
+#availablePuzzles::-webkit-scrollbar-thumb {
+    background: #666;
+    border-radius: 5px;
+}
+
+#availablePuzzles::-webkit-scrollbar-thumb:hover {
+    background: #888;
+}
+
+
+/* =========================================================
+   PUZZLE BUTTONS
+   ========================================================= */
 
 .puzzleButton {
     display: block;
@@ -285,6 +328,79 @@ body {
     color: #60A080;
 }
 
+
+/* =========================================================
+   COMPLETED DROPDOWN
+   ========================================================= */
+
+.completedDropdown {
+    margin-top: 15px;
+}
+
+
+.completedDropdownHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 10px;
+
+    background: #222;
+    border: 2px solid #555;
+    border-radius: 6px;
+
+    color: white;
+    font-weight: bold;
+
+    cursor: pointer;
+    user-select: none;
+}
+
+
+.completedDropdownHeader:hover {
+    background: #333;
+}
+
+
+.completedArrow {
+    transition: transform 0.2s;
+}
+
+
+.completedDropdown.open
+.completedArrow {
+    transform: rotate(180deg);
+}
+
+
+#completedPuzzles {
+    display: none;
+
+    max-height: 200px;
+    overflow-y: auto;
+
+    background: rgba(20, 20, 20, 0.8);
+
+    border: 2px solid #555;
+    border-top: none;
+
+    border-radius: 0 0 6px 6px;
+
+    padding: 5px;
+}
+
+
+/*
+ * Show completed puzzles when dropdown
+ * is open.
+ */
+
+.completedDropdown.open
+#completedPuzzles {
+    display: block;
+}
+
+
 .completedPuzzle {
     display: flex;
     justify-content: space-between;
@@ -296,15 +412,22 @@ body {
     color: #aaa;
 }
 
+
+.completedPuzzle:last-child {
+    border-bottom: none;
+}
+
+
 .completedPuzzleName {
     color: #ddd;
 }
 
+
 .completedPuzzleTime {
     color: #60A080;
     font-size: 12px;
+    font-weight: bold;
 }
-  
 /* =========================================================
    OTHER ORIGINAL STYLES
    ========================================================= */
@@ -474,7 +597,7 @@ const rooms = {
               },
               {
                   name: "Get Correct Final Code",
-                  requires: ["5123 Door", "Hang Letters"]
+                  requires: ["5123 Door", "Hang Letters", "Place Pot And Gun"]
               },
               {
                   name: "Open Safe",
@@ -700,7 +823,16 @@ function loadAudio(room) {
    ========================================================= */
 
 let completedPuzzles = [];
+
 let puzzleCompletionTimes = {};
+
+
+/*
+ * Whether the completed-puzzle dropdown
+ * is currently open.
+ */
+
+let completedDropdownOpen = false;
 
 
 /* =========================================================
@@ -710,7 +842,23 @@ let puzzleCompletionTimes = {};
 function resetPuzzles() {
 
     completedPuzzles = [];
+
     puzzleCompletionTimes = {};
+
+    completedDropdownOpen = false;
+
+    const dropdown =
+        document.getElementById(
+            "completedDropdown"
+        );
+
+    if (dropdown) {
+
+        dropdown.classList.remove(
+            "open"
+        );
+
+    }
 
     renderPuzzles();
 
@@ -723,14 +871,11 @@ function resetPuzzles() {
 
 function isPuzzleAvailable(puzzle) {
 
-    /*
-     * A puzzle is available if every puzzle
-     * listed in "requires" has already been completed.
-     */
-
     return puzzle.requires.every(
         requirement =>
-            completedPuzzles.includes(requirement)
+            completedPuzzles.includes(
+                requirement
+            )
     );
 
 }
@@ -744,12 +889,20 @@ function completePuzzle(puzzleName) {
 
     if (!currentRoom) return;
 
+
     /*
-     * Don't allow a puzzle to be completed twice.
+     * Don't allow the same puzzle
+     * to be completed twice.
      */
 
-    if (completedPuzzles.includes(puzzleName)) {
+    if (
+        completedPuzzles.includes(
+            puzzleName
+        )
+    ) {
+
         return;
+
     }
 
 
@@ -764,20 +917,27 @@ function completePuzzle(puzzleName) {
 
 
     if (!puzzle) {
+
         console.error(
             "Puzzle not found:",
             puzzleName
         );
 
         return;
+
     }
 
 
     /*
-     * Make sure the puzzle is actually available.
+     * Make sure its prerequisites
+     * have actually been completed.
      */
 
-    if (!isPuzzleAvailable(puzzle)) {
+    if (
+        !isPuzzleAvailable(
+            puzzle
+        )
+    ) {
 
         console.warn(
             "Puzzle is not available:",
@@ -790,7 +950,7 @@ function completePuzzle(puzzleName) {
 
 
     /*
-     * Record completion.
+     * Record the puzzle as completed.
      */
 
     completedPuzzles.push(
@@ -799,22 +959,32 @@ function completePuzzle(puzzleName) {
 
 
     /*
-     * Store the exact time.
+     * IMPORTANT:
+     *
+     * Record how much time is LEFT
+     * on the room timer.
      */
 
     puzzleCompletionTimes[puzzleName] =
-        new Date();
+        timerRemaining;
 
 
     console.log(
         "Puzzle completed:",
         puzzleName,
-        puzzleCompletionTimes[puzzleName]
+        "Time remaining:",
+        formatPuzzleTime(
+            timerRemaining
+        )
     );
 
 
     /*
-     * Rebuild the puzzle panel.
+     * Rebuild the puzzle list.
+     *
+     * This removes the completed puzzle
+     * and reveals anything that is now
+     * available.
      */
 
     renderPuzzles();
@@ -823,19 +993,74 @@ function completePuzzle(puzzleName) {
 
 
 /* =========================================================
-   FORMAT COMPLETION TIME
+   FORMAT TIMER VALUE
    ========================================================= */
 
-function formatPuzzleTime(date) {
+function formatPuzzleTime(seconds) {
 
-    return date.toLocaleTimeString(
-        [],
-        {
-            hour: "numeric",
-            minute: "2-digit",
-            second: "2-digit"
-        }
+    seconds =
+        Math.max(
+            0,
+            Math.floor(seconds)
+        );
+
+
+    const minutes =
+        Math.floor(
+            seconds / 60
+        );
+
+
+    const remainingSeconds =
+        seconds % 60;
+
+
+    return (
+        minutes
+            .toString()
+            .padStart(2, "0")
+        +
+        ":" +
+        remainingSeconds
+            .toString()
+            .padStart(2, "0")
     );
+
+}
+
+
+/* =========================================================
+   TOGGLE COMPLETED DROPDOWN
+   ========================================================= */
+
+function toggleCompletedPuzzles() {
+
+    completedDropdownOpen =
+        !completedDropdownOpen;
+
+
+    const dropdown =
+        document.getElementById(
+            "completedDropdown"
+        );
+
+
+    if (!dropdown) return;
+
+
+    if (completedDropdownOpen) {
+
+        dropdown.classList.add(
+            "open"
+        );
+
+    } else {
+
+        dropdown.classList.remove(
+            "open"
+        );
+
+    }
 
 }
 
@@ -858,25 +1083,32 @@ function renderPuzzles() {
         );
 
 
-    if (!availableContainer ||
-        !completedContainer) {
+    if (
+        !availableContainer ||
+        !completedContainer
+    ) {
 
         return;
 
     }
 
 
-    availableContainer.innerHTML = "";
-    completedContainer.innerHTML = "";
+    availableContainer.innerHTML =
+        "";
+
+    completedContainer.innerHTML =
+        "";
 
 
     /*
-     * Don't do anything if a room hasn't
-     * been selected yet.
+     * Don't do anything if no room
+     * has been selected.
      */
 
     if (!currentRoom) {
+
         return;
+
     }
 
 
@@ -884,16 +1116,15 @@ function renderPuzzles() {
         rooms[currentRoom];
 
 
-    /*
-     * AVAILABLE PUZZLES
-     */
+    /* =====================================================
+       AVAILABLE PUZZLES
+       ===================================================== */
 
     room.puzzles.forEach(
         puzzle => {
 
             /*
-             * Don't show puzzles that are
-             * already completed.
+             * Don't display completed puzzles.
              */
 
             if (
@@ -908,8 +1139,8 @@ function renderPuzzles() {
 
 
             /*
-             * Only show puzzles whose
-             * prerequisites are complete.
+             * Don't display puzzles
+             * whose prerequisites aren't done.
              */
 
             if (
@@ -958,7 +1189,7 @@ function renderPuzzles() {
 
 
     /*
-     * If there are no available puzzles.
+     * No available puzzles.
      */
 
     if (
@@ -990,9 +1221,9 @@ function renderPuzzles() {
     }
 
 
-    /*
-     * COMPLETED PUZZLES
-     */
+    /* =====================================================
+       COMPLETED PUZZLES
+       ===================================================== */
 
     completedPuzzles.forEach(
         puzzleName => {
@@ -1031,6 +1262,11 @@ function renderPuzzles() {
                 "completedPuzzleTime";
 
 
+            /*
+             * Display the amount of time
+             * remaining when completed.
+             */
+
             time.textContent =
                 formatPuzzleTime(
                     puzzleCompletionTimes[
@@ -1039,8 +1275,14 @@ function renderPuzzles() {
                 );
 
 
-            row.appendChild(name);
-            row.appendChild(time);
+            row.appendChild(
+                name
+            );
+
+
+            row.appendChild(
+                time
+            );
 
 
             completedContainer.appendChild(
@@ -1910,23 +2152,45 @@ window.addEventListener(
         PUZZLES
     </div>
 
+
     <div id="puzzleContainer">
 
         <div class="puzzleSectionTitle">
             AVAILABLE PUZZLES
         </div>
 
+
         <div id="availablePuzzles"></div>
 
 
-        <div
-            class="puzzleSectionTitle"
-            style="margin-top: 20px;"
-        >
-            COMPLETED
-        </div>
+        <!-- =============================================
+             COMPLETED DROPDOWN
+             ============================================= -->
 
-        <div id="completedPuzzles"></div>
+        <div
+            id="completedDropdown"
+            class="completedDropdown"
+        >
+
+            <div
+                class="completedDropdownHeader"
+                onclick="toggleCompletedPuzzles()"
+            >
+
+                <span>
+                    COMPLETED
+                </span>
+
+                <span class="completedArrow">
+                    ▼
+                </span>
+
+            </div>
+
+
+            <div id="completedPuzzles"></div>
+
+        </div>
 
     </div>
 
