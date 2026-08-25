@@ -239,7 +239,72 @@ body {
   width: 100%;
 }
 
+/* =========================================================
+   PUZZLE PANEL
+   ========================================================= */
 
+#puzzlePanel {
+    left: 30px;
+    top: 600px;
+    width: 320px;
+}
+
+#puzzleContainer {
+    background: rgba(0, 0, 0, 0.9);
+    border-radius: 0 0 12px 12px;
+    padding: 12px;
+    color: white;
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
+}
+
+.puzzleSectionTitle {
+    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.puzzleButton {
+    display: block;
+    width: 100%;
+    margin-bottom: 8px;
+    padding: 10px;
+
+    border: 2px solid #777;
+    border-radius: 6px;
+
+    background: #60A080;
+    color: white;
+
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.puzzleButton:hover {
+    background: white;
+    color: #60A080;
+}
+
+.completedPuzzle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 7px 4px;
+
+    border-bottom: 1px solid #444;
+    color: #aaa;
+}
+
+.completedPuzzleName {
+    color: #ddd;
+}
+
+.completedPuzzleTime {
+    color: #60A080;
+    font-size: 12px;
+}
+  
 /* =========================================================
    OTHER ORIGINAL STYLES
    ========================================================= */
@@ -358,7 +423,64 @@ const rooms = {
         ip2: "10.0.1.64",
 
         background: "lasers.jpg",
-
+        puzzles: [
+              {
+                  name: "Dice Lock",
+                  requires: []
+              },
+              {
+                  name: "Macy Lock",
+                  requires: []
+              },
+              {
+                  name: "Directional Lock",
+                  requires: []
+              },
+              {
+                  name: "Glasses Book",
+                  requires: []
+              },
+              {
+                  name: "Computer Login",
+                  requires: ["Glasses Book"]
+              },
+              {
+                  name: "Completed Sudoku",
+                  requires: []
+              },
+              {
+                  name: "Wall Safe",
+                  requires: ["Computer Login", "Completed Sudoku"]
+              },
+              {
+                  name: "Key Briefcase",
+                  requires: ["Wall Safe"]
+              },
+              {
+                  name: "Hang Letters",
+                  requires: ["Wall Safe"]
+              },
+              {
+                  name: "414 Briefcase",
+                  requires: ["Key Briefcase", "Dice Lock", "Macy Lock", "Directional Lock"]
+              },
+              {
+                  name: "Place Pot And Gun",
+                  requires: ["414 Briefcase"]
+              },
+              {
+                  name: "5123 Door",
+                  requires: ["414 Briefcase"]
+              },
+              {
+                  name: "Get Correct Final Code",
+                  requires: ["5123 Door", "Hang Letters"]
+              },
+              {
+                  name: "Open Safe",
+                  requires: ["Get Correct Final Code"]
+              }
+        ]
         sounds: [
             {
                 name: "Suspense",
@@ -499,6 +621,7 @@ function selectRoom(roomKey) {
 
     loadAudio(room);
 
+    resetPuzzles();
     startViewer();
 }
 
@@ -572,6 +695,362 @@ function loadAudio(room) {
 
 }
 
+/* =========================================================
+   PUZZLE SYSTEM
+   ========================================================= */
+
+let completedPuzzles = [];
+let puzzleCompletionTimes = {};
+
+
+/* =========================================================
+   RESET PUZZLES
+   ========================================================= */
+
+function resetPuzzles() {
+
+    completedPuzzles = [];
+    puzzleCompletionTimes = {};
+
+    renderPuzzles();
+
+}
+
+
+/* =========================================================
+   CHECK IF PUZZLE IS AVAILABLE
+   ========================================================= */
+
+function isPuzzleAvailable(puzzle) {
+
+    /*
+     * A puzzle is available if every puzzle
+     * listed in "requires" has already been completed.
+     */
+
+    return puzzle.requires.every(
+        requirement =>
+            completedPuzzles.includes(requirement)
+    );
+
+}
+
+
+/* =========================================================
+   COMPLETE PUZZLE
+   ========================================================= */
+
+function completePuzzle(puzzleName) {
+
+    if (!currentRoom) return;
+
+    /*
+     * Don't allow a puzzle to be completed twice.
+     */
+
+    if (completedPuzzles.includes(puzzleName)) {
+        return;
+    }
+
+
+    const room =
+        rooms[currentRoom];
+
+
+    const puzzle =
+        room.puzzles.find(
+            p => p.name === puzzleName
+        );
+
+
+    if (!puzzle) {
+        console.error(
+            "Puzzle not found:",
+            puzzleName
+        );
+
+        return;
+    }
+
+
+    /*
+     * Make sure the puzzle is actually available.
+     */
+
+    if (!isPuzzleAvailable(puzzle)) {
+
+        console.warn(
+            "Puzzle is not available:",
+            puzzleName
+        );
+
+        return;
+
+    }
+
+
+    /*
+     * Record completion.
+     */
+
+    completedPuzzles.push(
+        puzzleName
+    );
+
+
+    /*
+     * Store the exact time.
+     */
+
+    puzzleCompletionTimes[puzzleName] =
+        new Date();
+
+
+    console.log(
+        "Puzzle completed:",
+        puzzleName,
+        puzzleCompletionTimes[puzzleName]
+    );
+
+
+    /*
+     * Rebuild the puzzle panel.
+     */
+
+    renderPuzzles();
+
+}
+
+
+/* =========================================================
+   FORMAT COMPLETION TIME
+   ========================================================= */
+
+function formatPuzzleTime(date) {
+
+    return date.toLocaleTimeString(
+        [],
+        {
+            hour: "numeric",
+            minute: "2-digit",
+            second: "2-digit"
+        }
+    );
+
+}
+
+
+/* =========================================================
+   RENDER PUZZLES
+   ========================================================= */
+
+function renderPuzzles() {
+
+    const availableContainer =
+        document.getElementById(
+            "availablePuzzles"
+        );
+
+
+    const completedContainer =
+        document.getElementById(
+            "completedPuzzles"
+        );
+
+
+    if (!availableContainer ||
+        !completedContainer) {
+
+        return;
+
+    }
+
+
+    availableContainer.innerHTML = "";
+    completedContainer.innerHTML = "";
+
+
+    /*
+     * Don't do anything if a room hasn't
+     * been selected yet.
+     */
+
+    if (!currentRoom) {
+        return;
+    }
+
+
+    const room =
+        rooms[currentRoom];
+
+
+    /*
+     * AVAILABLE PUZZLES
+     */
+
+    room.puzzles.forEach(
+        puzzle => {
+
+            /*
+             * Don't show puzzles that are
+             * already completed.
+             */
+
+            if (
+                completedPuzzles.includes(
+                    puzzle.name
+                )
+            ) {
+
+                return;
+
+            }
+
+
+            /*
+             * Only show puzzles whose
+             * prerequisites are complete.
+             */
+
+            if (
+                !isPuzzleAvailable(
+                    puzzle
+                )
+            ) {
+
+                return;
+
+            }
+
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+
+            button.className =
+                "puzzleButton";
+
+
+            button.textContent =
+                puzzle.name;
+
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    completePuzzle(
+                        puzzle.name
+                    );
+
+                }
+            );
+
+
+            availableContainer.appendChild(
+                button
+            );
+
+        }
+    );
+
+
+    /*
+     * If there are no available puzzles.
+     */
+
+    if (
+        availableContainer.children.length === 0
+    ) {
+
+        const empty =
+            document.createElement(
+                "div"
+            );
+
+
+        empty.textContent =
+            "No puzzles currently available.";
+
+
+        empty.style.color =
+            "#888";
+
+
+        empty.style.padding =
+            "5px";
+
+
+        availableContainer.appendChild(
+            empty
+        );
+
+    }
+
+
+    /*
+     * COMPLETED PUZZLES
+     */
+
+    completedPuzzles.forEach(
+        puzzleName => {
+
+            const row =
+                document.createElement(
+                    "div"
+                );
+
+
+            row.className =
+                "completedPuzzle";
+
+
+            const name =
+                document.createElement(
+                    "span"
+                );
+
+
+            name.className =
+                "completedPuzzleName";
+
+
+            name.textContent =
+                puzzleName;
+
+
+            const time =
+                document.createElement(
+                    "span"
+                );
+
+
+            time.className =
+                "completedPuzzleTime";
+
+
+            time.textContent =
+                formatPuzzleTime(
+                    puzzleCompletionTimes[
+                        puzzleName
+                    ]
+                );
+
+
+            row.appendChild(name);
+            row.appendChild(time);
+
+
+            completedContainer.appendChild(
+                row
+            );
+
+        }
+    );
+
+}
 
 /* =========================================================
    CAMERA PTZ
@@ -1051,7 +1530,8 @@ function initDragging() {
         "timerPanel",
         "cameraPanel1",
         "cameraPanel2",
-        "audioPanel"
+        "audioPanel",
+        "puzzlePanel"
     ];
 
 
@@ -1417,6 +1897,40 @@ window.addEventListener(
 
 </div>
 
+<!-- ===================================================
+     PUZZLES
+     =================================================== -->
+
+<div
+    id="puzzlePanel"
+    class="draggablePanel"
+>
+
+    <div class="dragHandle">
+        PUZZLES
+    </div>
+
+    <div id="puzzleContainer">
+
+        <div class="puzzleSectionTitle">
+            AVAILABLE PUZZLES
+        </div>
+
+        <div id="availablePuzzles"></div>
+
+
+        <div
+            class="puzzleSectionTitle"
+            style="margin-top: 20px;"
+        >
+            COMPLETED
+        </div>
+
+        <div id="completedPuzzles"></div>
+
+    </div>
+
+</div>
 
 <!-- =======================================================
      TIMER JAVASCRIPT
