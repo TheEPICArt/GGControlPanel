@@ -1,6 +1,8 @@
+<!DOCTYPE html>
 <html>
 <head>
-<title>Heist Controller</title>
+<title>Getout Room Controller</title>
+
 <style>
 body {
   margin: 0;
@@ -11,6 +13,69 @@ body {
   background-size: cover;
   position: relative;
 }
+
+/* =========================
+   ROOM SELECTION SCREEN
+   ========================= */
+
+#roomSelection {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+#roomSelection h1 {
+  font-size: 48px;
+  margin-bottom: 50px;
+  color: white;
+}
+
+.roomButtons {
+  display: flex;
+  gap: 30px;
+}
+
+.roomButton {
+  width: 220px;
+  height: 120px;
+  font-size: 28px;
+  font-weight: bold;
+  color: white;
+  background: #222;
+  border: 3px solid #777;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.roomButton:hover {
+  background: #60A080;
+  border-color: white;
+  transform: scale(1.05);
+}
+
+/* =========================
+   MAIN CONTROLLER
+   ========================= */
+
+#controller {
+  display: none;
+}
+
+#roomTitle {
+  text-align: center;
+  font-size: 28px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  color: white;
+  font-weight: bold;
+}
+
 div#containerControls {
     display: flex;
     justify-content: space-between;
@@ -18,6 +83,7 @@ div#containerControls {
     padding: 1em;
     height: 190px;
 }
+
 #ptzControls input[type="image"],
 #ptzControls2 input[type="image"] {
   opacity: 0.05;
@@ -28,6 +94,7 @@ div#containerControls {
 #ptzControls2 input[type="image"]:hover {
   opacity: 1.0;
 }
+
 #viewer {
   display: flex;
   justify-content: center;
@@ -59,36 +126,43 @@ div#containerControls {
   border-radius: 8px;
   padding: 8px;
 }
+
 div#settings {
     border: 1px dotted;
     padding: 1em;
     text-align: left;
 }
+
 img#webcamSnapshot {
     width: 95%;
     border: 2px solid #787272;
 }
+
 img#webcamSnapshot2 {
     width: 95%;
     border: 2px solid #787272;
 }
-iframe#commandResult { 
+
+iframe#commandResult {
     width: 99%;
 }
+
 td {
     text-align: center;
 }
+
 .sound-effect {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1em;
-  background: rgba(30, 30, 30); /* slightly transparent dark container */
+  background: rgba(30, 30, 30);
   border: 1px solid rgba(0, 255, 150, 0.15);
-  border-radius: 12px; /* curved edges */
+  border-radius: 12px;
   padding: 0.8em 1.2em;
   margin: 0.8em 0;
 }
+
 .textbox {
     height: 2em;
     width: 10em;
@@ -100,6 +174,7 @@ td {
     font-family: Verdana,sans-serif;
     font-weight: bold;
 }
+
 .button {
     border-radius: 5px;
     border: 3px solid #777777;
@@ -111,48 +186,284 @@ td {
     margin-left: 0em;
     margin-right: 1em;
 }
+
 .button:hover {
     background-color: #FFFFFF;
     color: #60A080;
     cursor: pointer;
 }
+
 a#toggleControls {
     font-family: Verdana,sans-serif;
     font-weight: bold;
 }
+
 @font-face {
-  font-family: heistfont; /* set name */
-  src: url(sansation_light.woff); /* url of the font */
+  font-family: heistfont;
+  src: url(sansation_light.woff);
 }
 
+/* Audio panel */
+
+#audioPlayer {
+  background-color: black;
+  border-radius: 12px;
+  padding: 10px;
+  width: 260px;
+}
+
+#audioPlayer h3 {
+  color: white;
+  margin-top: 5px;
+  margin-bottom: 15px;
+}
+
+.audioItem {
+  margin-bottom: 15px;
+}
+
+.audioItem figcaption {
+  color: white;
+  margin-bottom: 5px;
+}
+
+.audioItem audio {
+  width: 100%;
+}
 </style>
 
+
 <script type="text/javascript">
+
+/* =========================================================
+   ROOM CONFIGURATION
+   ========================================================= */
+
+const rooms = {
+
+    heist: {
+        name: "Heist",
+
+        ip1: "10.0.1.65",
+        ip2: "10.0.1.64",
+
+        sounds: [
+            {
+                name: "Suspense",
+                file: "suspense.mp3",
+                loop: true
+            },
+            {
+                name: "Mission Impossible Theme",
+                file: "theme.mp3",
+                loop: false
+            },
+            {
+                name: "Alarm",
+                file: "alarm.mp3",
+                loop: true
+            }
+        ]
+    },
+
+    reactor: {
+        name: "Reactor",
+
+        ip1: "10.0.1.157",
+        ip2: "10.0.1.156",
+
+        sounds: [
+            {
+                name: "Coolant Shutdown Switch",
+                file: "coolant.mp3",
+                loop: false
+            },
+            {
+                name: "Reactor Shutdown Lever",
+                file: "power_down.mp3",
+                loop: false
+            },
+            {
+                name: "10 Minute Timer",
+                file: "timer.mp3",
+                loop: false
+            }
+        ]
+    },
+
+    egyptian: {
+        name: "Egyptian",
+
+        ip1: "10.0.1.9",
+        ip2: "10.0.1.24",
+
+        sounds: [
+            {
+                name: "Thunder Sounds",
+                file: "thunder.mp3",
+                loop: false
+            },
+            {
+                name: "Correct Idol",
+                file: "idol_correct.mp3",
+                loop: false
+            },
+            {
+                name: "Incorrect Idol",
+                file: "idol_incorrect.mp3",
+                loop: false
+            },
+            {
+                name: "Egyptian Music",
+                file: "intro-song.mp3",
+                loop: false
+            },
+            {
+                name: "Indiana Jones Theme",
+                file: "indiana-jones.mp3",
+                loop: false
+            },
+            {
+                name: "Grinding And Birds",
+                file: "grinding-and-birds.mp3",
+                loop: false
+            }
+        ]
+    }
+};
+
+
+/* =========================================================
+   CURRENT ROOM
+   ========================================================= */
+
+let currentRoom = null;
+
 var task;
-var panTiltDuration     = 500;
-var username            = "admin";
-var password            = "handsome1984";
-var ip1 = "10.0.1.65"
-var ip2 = "10.0.1.64"
+var panTiltDuration = 500;
+var username = "admin";
+var password = "handsome1984";
+
+var ip1;
+var ip2;
 
 let moveInterval = null;
 
+
+/* =========================================================
+   ROOM SELECTION
+   ========================================================= */
+
+function selectRoom(roomKey) {
+
+    const room = rooms[roomKey];
+
+    if (!room) {
+        console.error("Unknown room:", roomKey);
+        return;
+    }
+
+    currentRoom = roomKey;
+
+    ip1 = room.ip1;
+    ip2 = room.ip2;
+
+    console.log("Selected room:", room.name);
+    console.log("Camera 1:", ip1);
+    console.log("Camera 2:", ip2);
+
+    document.getElementById("roomSelection").style.display = "none";
+    document.getElementById("controller").style.display = "block";
+
+    document.getElementById("roomTitle").textContent =
+        room.name + " Controller";
+
+    loadAudio(room);
+
+    startViewer();
+}
+
+
+/* =========================================================
+   AUDIO
+   ========================================================= */
+
+function loadAudio(room) {
+
+    const audioPlayer = document.getElementById("audioPlayer");
+
+    audioPlayer.innerHTML = "";
+
+    const heading = document.createElement("h3");
+    heading.textContent = "Audio Controls";
+    audioPlayer.appendChild(heading);
+
+    room.sounds.forEach((sound, index) => {
+
+        const item = document.createElement("div");
+        item.className = "audioItem";
+
+        const caption = document.createElement("figcaption");
+        caption.textContent = sound.name + ":";
+
+        const audio = document.createElement("audio");
+
+        audio.controls = true;
+        audio.src = sound.file;
+
+        if (sound.loop) {
+            audio.loop = true;
+        }
+
+        /*
+         * Stop the suspense/music/etc. audio when another
+         * sound is started.
+         */
+        audio.addEventListener("play", () => {
+
+            document.querySelectorAll("#audioPlayer audio").forEach(other => {
+
+                if (other !== audio) {
+                    other.pause();
+                    other.currentTime = 0;
+                }
+
+            });
+
+        });
+
+        item.appendChild(caption);
+        item.appendChild(audio);
+
+        audioPlayer.appendChild(item);
+    });
+}
+
+
+/* =========================================================
+   CAMERA PTZ
+   ========================================================= */
+
 function startPtz(command) {
-    stopPtz(); // stop any previous movement
+    stopPtz();
     sendCommand(command, ip1);
 }
 
 function startPtz2(command) {
-    stopPtz(); // stop any previous movement
+    stopPtz();
     sendCommand(command, ip2);
 }
 
 function stopPtz() {
+    if (!ip1 || !ip2) return;
+
     sendCommand("ptzStopRun", ip1);
     sendCommand("ptzStopRun", ip2);
 }
 
+
 function sendCommand(command, ip) {
+
     const commandMap = {
         ptzMoveUp: 0,
         ptzMoveDown: 2,
@@ -173,273 +484,780 @@ function sendCommand(command, ip) {
         return;
     }
 
-    const url = `http://${ip}/decoder_control.cgi?user=${username}&pwd=${password}&command=${cmdValue}`;
+    if (!ip) {
+        console.error("No camera IP selected.");
+        return;
+    }
+
+    const url =
+        `http://${ip}/decoder_control.cgi?user=${username}&pwd=${password}&command=${cmdValue}`;
+
     console.log("Sending command:", url);
 
     fetch(url)
         .then(response => {
+
             if (!response.ok) {
-                throw new Error("Camera command failed: " + response.statusText);
+                throw new Error(
+                    "Camera command failed: " + response.statusText
+                );
             }
+
             return response.text();
         })
+
         .then(data => {
             console.log("Camera responded:", data);
         })
+
         .catch(error => {
             console.error("Error sending command:", error);
         });
 }
 
-function getSnapshot()
-{
+
+/* =========================================================
+   CAMERA SNAPSHOTS
+   ========================================================= */
+
+function getSnapshot() {
+
+    if (!ip1 || !ip2) return;
+
     var d = new Date();
     var t = d.getTime();
-    var url = `http://${ip1}/videostream.cgi?&user=${username}&pwd=${password}&cmd=` + "snapPicture2" + "&cachebust=" + t;
-    var url2 = `http://${ip2}/videostream.cgi?&user=${username}&pwd=${password}&cmd=` + "snapPicture2" + "&cachebust=" + t;
-    // Update viewer pane with new snapshot:
+
+    var url =
+        `http://${ip1}/videostream.cgi?&user=${username}&pwd=${password}&cmd=snapPicture2&cachebust=${t}`;
+
+    var url2 =
+        `http://${ip2}/videostream.cgi?&user=${username}&pwd=${password}&cmd=snapPicture2&cachebust=${t}`;
+
     document.getElementById("webcamSnapshot").src = url;
     document.getElementById("webcamSnapshot2").src = url2;
 }
 
-function startViewer()
-{
-    task = getSnapshot()
+
+function startViewer() {
+    getSnapshot();
 }
 
-function stopViewer()
-{
-    clearInterval( task );
+
+function stopViewer() {
+    clearInterval(task);
 }
 
-function setPanTiltDuration( form )
-{
-    panTiltDuration = parseFloat( form.textboxPanTiltDuration.value );
-    if ( isNaN( panTiltDuration ) )
-    {
+
+function setPanTiltDuration(form) {
+
+    panTiltDuration =
+        parseFloat(form.textboxPanTiltDuration.value);
+
+    if (isNaN(panTiltDuration)) {
         panTiltDuration = 500;
     }
 }
 
-function initPage()
-{
-    startViewer();    
-}
+
+/* =========================================================
+   COMMAND SERVER
+   ========================================================= */
 
 async function sendCmd(cmd) {
-  try {
-    const resp = await fetch('http://10.0.1.145:5000/cmd', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cmd })
-    });
-    const text = await resp.text();
-    console.log("Command response:", text);
-  } catch (e) {
-    console.error("Error sending command:", e);
-  }
+
+    try {
+
+        const resp = await fetch(
+            'http://10.0.1.145:5000/cmd',
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    cmd
+                })
+            }
+        );
+
+        const text = await resp.text();
+
+        console.log("Command response:", text);
+
+    } catch (e) {
+
+        console.error("Error sending command:", e);
+
+    }
 }
+
+
+/* =========================================================
+   PAGE INITIALIZATION
+   ========================================================= */
+
+function initPage() {
+
+    /*
+     * Don't start cameras yet.
+     * The user must select a room first.
+     */
+
+    document.getElementById("roomSelection").style.display = "flex";
+    document.getElementById("controller").style.display = "none";
+}
+
 </script>
+
 </head>
 
+
 <body onload="initPage()">
-    <div id="containerControls">
-      <div id="timerContainer" style="text-align: center; background-color: black; border-radius: 12px; padding: 10px; color: white; width: fit-content; margin: 0 auto;">
-        <div id="timerDisplay" style="font-size: 60;">60:00</div>
-        <button id="openTimerWindow">Open Timer Window</button>
-        <button id="closeTimerWindow">Close Timer Window</button>
-        <div id="timerButtons">
-          <button id="startButton">Start</button>
-          <button id="pauseButton">Pause</button>
-          <button id="resetButton">Reset</button>
-        </div>
-        <label for="speedSelect">Speed:</label>
-        <select id="speedSelect">
-          <option value="0.25">0.25x</option>
-          <option value="0.5">0.5x</option>
-          <option value="0.75">0.75x</option>
-          <option value="1" selected>1x</option>
-          <option value="1.25">1.25x</option>
-          <option value="1.5">1.5x</option>
-          <option value="1.75">1.75x</option>
-          <option value="2">2x</option>
-        </select>
-      </div>
+
+
+<!-- =======================================================
+     ROOM SELECTION
+     ======================================================= -->
+
+<div id="roomSelection">
+
+    <h1>Select Room</h1>
+
+    <div class="roomButtons">
+
+        <button
+            class="roomButton"
+            onclick="selectRoom('heist')">
+            HEIST
+        </button>
+
+        <button
+            class="roomButton"
+            onclick="selectRoom('reactor')">
+            REACTOR
+        </button>
+
+        <button
+            class="roomButton"
+            onclick="selectRoom('egyptian')">
+            EGYPTIAN
+        </button>
+
     </div>
+
+</div>
+
+
+<!-- =======================================================
+     MAIN CONTROLLER
+     ======================================================= -->
+
+<div id="controller">
+
+    <div id="roomTitle"></div>
+
+
+    <!-- TIMER -->
+
+    <div id="containerControls">
+
+        <div
+            id="timerContainer"
+            style="
+                text-align: center;
+                background-color: black;
+                border-radius: 12px;
+                padding: 10px;
+                color: white;
+                width: fit-content;
+                margin: 0 auto;
+            "
+        >
+
+            <div
+                id="timerDisplay"
+                style="font-size: 60px;"
+            >
+                60:00
+            </div>
+
+            <button id="openTimerWindow">
+                Open Timer Window
+            </button>
+
+            <button id="closeTimerWindow">
+                Close Timer Window
+            </button>
+
+            <div id="timerButtons">
+
+                <button id="startButton">
+                    Start
+                </button>
+
+                <button id="pauseButton">
+                    Pause
+                </button>
+
+                <button id="resetButton">
+                    Reset
+                </button>
+
+            </div>
+
+            <label for="speedSelect">
+                Speed:
+            </label>
+
+            <select id="speedSelect">
+
+                <option value="0.25">
+                    0.25x
+                </option>
+
+                <option value="0.5">
+                    0.5x
+                </option>
+
+                <option value="0.75">
+                    0.75x
+                </option>
+
+                <option value="1" selected>
+                    1x
+                </option>
+
+                <option value="1.25">
+                    1.25x
+                </option>
+
+                <option value="1.5">
+                    1.5x
+                </option>
+
+                <option value="1.75">
+                    1.75x
+                </option>
+
+                <option value="2">
+                    2x
+                </option>
+
+            </select>
+
+        </div>
+
+    </div>
+
+
+    <!-- ===================================================
+         CAMERAS
+         =================================================== -->
 
     <div id="viewer">
+
+
+        <!-- CAMERA 1 -->
+
         <div class="cameraContainer">
-          <img src="" id="webcamSnapshot"/>
-          <table id="ptzControls">
-            <tbody>
-              <tr>
-                <td><input name="moveUpLeft" value="UpLeft" title="Move camera up and left" onmousedown='startPtz("ptzMoveTopLeft")' onmouseup='stopPtz()' onmouseleave='stopPtz()' type="image" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wYaCzcHnW6cdwAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAANESURBVGje7Zq/TyJpHIefcamMUZlJsLORTgt1oibQDdmo/RZssl6nttfsNjZX2NzfcZZntKGwgbkoJIwmhEAMlYnRBAFFBi0Ag+9V7LJ7uZMfw/LehLebmbwzeebzzDvzft9R/jKzAhe3sXw+71q4SCTCGIAbISORCACe1o58Pk/443tXwH35/Ps3RXF5GwGOAEeAI0D5ABVFcS/g5OQkS0tLTE9PoyiK9LCebuG2trYIh8OkUilM06RYLJLNZrFtGwAhxP8TUFEU/H4/4XCYxcVFdF0nFApRLpdJJpMkEgkpYTsGFEJwdXVFKpVC13UuLy9pNBp4vV52d3fZ3NyUErYrRW3bJhaLYRgGLy8vHBwcUCgUCAQCrKysoKqqdLCebjuUSiXK5TKaplEoFDg+PiYajTI/P4/P5yMYDEoF++7Dh19+a238efjHmx2q1Sp+vx/DMCgUCiSTSSqVCre3t+RyOSzLIpPJYFkWpVIJr9eLqqqEQiF0XScYDDI3N8fExASaplGtVqnX646OxsHg+94B6/U64+PjLC8vo2kamUyGm5sbhBAIIajVakOHbQf09HKCdk19Pt8/jr++vgLw+PhIIpEAIBaLDUXjrhP8UdNisYhlWdRqtX8dfZ1IttFooChKR7B9J2jbNmdnZ6yvr7O2tsbCwgLxePzNi/ea7MXFBblcjoeHB0zT5P7+fnCjaKeavtW6gd3e3ub5+Zlqtcre3h6Hh4df+w8EUAhBNpvl/PycnZ0dAoEA0WiUSqXS0836L9iZmRk2NjYwDKOnZ7HnBHvVtBfYeDzOyckJAKZpdpxeX4BOaNop7N3dHUdHRwA0m82fM+Ft13R2dpZAIMDU1NTAvkiazWbXcH3P6FuaXl9ff9VUtvlh3yWLlqaqqg5E06EC/mxNh5Kg7Jo6UlWTWdO+AWXX1JEEZdbUscKvrJo6Aiizpo4lKKumjq5NyKipY4CyaupogjJq6vjymWyaOgooo6aOJ9iu6erq6tA19QzipKVSSZqfixwHFEKQTqfZ398HIJ1OD3UZbSAJPj09cXp6+l1dxVWAMoANbJBxVcliBDgCHAGOALt6TWx9+tW9Cbb+cXZDa/9MHHMb3I+QfwMHJ6eI4RIxlwAAAABJRU5ErkJggg=="/></td>
-                <td><input name="moveUp" value="Up" title="Move camera up" onmousedown='startPtz("ptzMoveUp")' onmouseup='stopPtz()' onmouseleave='stopPtz()' type="image" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wYZFRApn3ACSQAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAJsSURBVGje7doxS+NgGMDx//u0BBe/gVPjIN2EEhqwENH7BHa4w7vvcMsduLvc6OiH6NgIYmlvcEntdqDFplAIdneyFcxN9Ty5A3PX900a8mzJ8vDPL5Ahr/re+xGT45HpdJrbuHa7jQDkMbLdbgNQXtyYTqe8//AuF3Ffv3z79YqS8ykCi8AisAgsAlcmsFQqUSqVjAaWTS3a2Njg4OAAgFarRRRF+QlcW1vj8PCQo6Oj5+uTkxMeHh5W/xVVSlGpVHBdF4A4jnFdl0qlglJq9QUty2J/f59arUa/3wegVquxt7dHGIbMZrPVFVRKYds2nucB4Ps+Z2dnAOzu7mLbtnbFsgk9x3EIgoDz83MAdnZ2cBzHiKKY0ut2u4xGI0ajEb1ez5iimNLrdDrM53Pm8zkXFxcEQfCsaFnWagX+SS8MQ+I4Jo5jwjA0pigm9RZjUlFM6i3GpKKY1jOtKKb1TCtKGnomFSUNPZOKkpaeKUVJS8+UoqSpZ0JR0tQzoShp6+lWlLT1dCtKFvR0KkoW9HQqSlb0dClKVvR0KUqW9HQoSpb0dChK1vSWrShJ9TY3N7XqLVsxUeD6+jrNZhPXdbm6utKmt0zFNweKCLZt02g0sCyLwWDAeDzWovc3Rc/zEv/TKCdZdn9/T7/fJ4oifN/X/l/hpWK9Xmd7e5utrS2Gw+GbH2yiwCiKOD09RSnF3d2dVr2Xe29vbzk+PqZarXJ5ecnT09PyBQFmsxmTyeR5sal5fHzk+vqam5ubRHGJA02Hvd77L7uLQwhFYBFYBBaB/zO/fSY+ffycX8HFGec8zMsz6JK3uNeRPwE9eF5yo2WGTAAAAABJRU5ErkJggg=="/></td>
-                <td><input name="moveUpRight" value="UpRight" title="Move camera up and right" onmousedown='startPtz("ptzMoveTopRight")' onmouseup='stopPtz()' onmouseleave='stopPtz()' type="image" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wYaCzcUGdDdqQAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAKUSURBVGje7doxaxphGMDx/x0ZwykadBOyBXERRNFJh+6OLdTv0KVdXHXo58ji5iDCbbbE6OAggjqKTocaBZUMDnodiq0Nheb0feub457R4eDH81fvXk77/q1v4+LRLctyLa5er6MDuBFZr9cBuDp8YFkW7z+8cwXuy+evvxPF5eMBPaAH9IAeEEDTNPcBNU1D0zT8fj/xeBzDMBxf40rVTfl8PmKxGKFQiGw2Szwep1KpcH9/z3q9flvAv6EymQypVIpAIMDt7S273Q6AdrtNt9vFtm21gf9CRSIRJpMJq9WK4XBINBql2+0yGo1ejfvvwNeiFosFpmnSarUIh8MUCgVGoxGNRoPVaqXWd9Ap6vHxkdlsxmAwYL1ek8/nMQyDxWLBfD5X40fmHNRhQ/v9Hr/fTzqdJhKJYJom/X7fUZ5CgaJQx9eLxWKkUikmkwnNZtNxnmcDRaNeTigUIhAInJznSUBd/3lvYBiGFNRhfD4fmUzmrDwdA29ubshmswSDQe7u7kgkEkJRovN0BNR1nVwuR7lcxjAMrq+vGY/HwlAy8jwpUdu2eX5+plarYZom0+lUGEp0no6A+/2eRqNBsVgEoNlsMpvNhKFk5Ol4g09PT1SrVYBf94YyRlSeJz0u7XY7qbjjPDudzll5Kvc8KDpPJR94D3kul8uz81QOKDpPpYAy8lRug6LzVAooI09lgLLyVGqDMvJUBigrTyWAMvNUZoOy8lQCKDPPiwNl56nEBmXmeXGg7DwvCjzkmUwmpeWpRKLb7RbLsqTk6fjIQuTYtk2v16NUKgHQ6/WE53lRIMBms+Hh4QEQe3ClDFAmTNkjCw/oAT2gB3xT88ffROHjJ/du8PCOsxvm+B103W24l8gfaw4qxG1hhB0AAAAASUVORK5CYII="/></td>
-              </tr>
-              <tr>
-                <td><input name="moveLeft" value="Left" title="Move camera left" onmousedown='startPtz("ptzMoveLeft")' onmouseup='stopPtz()' onmouseleave='stopPtz()' type="image" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wYZFRE05W1f0QAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAJ5SURBVGje7do9q9pQGAfwf1SCi5ujkxF82QQJBhUiej+BDi22/QxdWnDr4NKP4Ny1jskgEe3goCFOhUR8AUHiHhejqJ1sL4Xb3hhNjiFnS+AMP54nyfmfHOrH4OcZHh6BzWbjWZwgCAgAgBeRgiAAAEKXG5vNBm/ePnkC9/nT1z8tCo8PH+gDfaAP9IEAEAgEQFGU5Xkh0mEURSESiYBhGBiGgfV6DdM0Hx9IURRomkYikUC9XkepVIIsy2i321itVjifz48JvMAYhkG1WgXP8+A4DjRNY71eW27TEMkwlmUBAKPRCIqiQBRF6Lr+6uoRAfwXbDweo9/vo9frYblcwjRNSzhXga+FLRYL7Pd7yzDXgE7BHAc6DXMM6Bbs7kC3YXcDkgK7OZA02M2ApMJsA0mH2QKGw2HE43GiYVcDY7EYGo0GOI5DLpcjFnYVMBgMolarodlsAgBkWYYoiuh2u5jP50TBbCf6C+SalE1sBY/HIzqdDsLh8O8WTafTKBaLGAwGkCSJuBYN1usfvlwuvne+/XeCYRhQFAWTyQS6roOmabAsi0KhgGQyiWg0iu12C8MwcDqdXEEVCk/23qK73Q6qqmKxWKDX66FSqaBcLoNlWbAsC57nialoyM4zaJom8VDbKxnSoTdbi5IKvXmaIA16tzxICvTuid5tqGN7Mm5BHd9Vcxrq2r6oU1DXd7atQmezGQ6Hw+MArUDz+TxarRZUVX3cv0svQXmeRzabRSaTgaZpjwt8CSpJElKpFIbDoaWUQvwf3gtU0zRMp1PLEYx44HPoNZ8K/5SFD/SBPtAH3ixNvH/30bsVvJxx9sJ4fgY94DXc38hfGRf3Q08k5rwAAAAASUVORK5CYII="/></td>
-                <td><input name="resetPosition" value="Reset" title="Reset to home position" onmousedown='startPtz("ptzReset")' onmouseup='stopPtz()' onmouseleave='stopPtz()' type="image" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wYaFQMuck55lgAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAANmSURBVGje7ZpLSFRRGMd/R1xIGxfKbCKyF7XJ55jaQ5wmi54gkSYaWLselFhpi94ZNVqiIS5LKBGKCMJJfJdWPhpLrUWRaS5kQHThZranxWW4947Tw8cd9Xb/MHC+M9zvm9/9vjn3fIcr3rz+IjGxwrxer2nh3G43YQBmhHS73QCE+ye8Xi9HczNNAVd80aWWKCaXBWgBWoAWoAVoAf7PgOFGOl+xAmI3Q3o6bN8GmzZCZCRMT8PXb/D2HXR2wtBn8PmWEeD6dXC+CLKPiKDfR0XBtq3Kp+SiMvf0meR+BQz/WMIlGhkJNdXQ2y1+C/c7ZR8R9HYLaqoVP0sug/YkaGoMDvXxk6StHTwe+D4MG9aD3Q7OnZCYoL8mJ1uQkw179ko8/UsEcHcm1NfNhHv8RPKoFgaH9PNjY9DaBnddEBcrOV4Ax/L11zc1CnLzJM0ti1yiaakz4Tq7JM5MSWHRTLhADQ5BYRE4MyWdXfrDhfo6QVrqIgLabNDwUg9X9UCSdRgGBmfna2AQsg4r12vV8FJgsy0SYE213i67J7lZOr87frNU8fOnOCEBtCeBI0PN3qtGiatsYRYsV5nizy9HhsCeFGLA0lt6+9r1hX1+BfoLjGcoYHQ0JNvV7FVWSUZGFxZwZFTx61eyXRAdHSLA1BS9/bDWmG1WoN/AuIYBOneq4+YWyfi4MYDj44r/YHENBdyyRR13dBjbDWj9a+MaChizWrMNGzAWUOtfG3dJtEvz0dTEzK1fRIRgakLTldikMRn8OaaOE+ONAfzbj/8XuDkD9vWpY4fDhEcWbe3aTkKwcmVos/iv2ZszYE+v3j5RYFwGAmFmAzdnwMlJ+OBRAxWeE6xdY6ISBbh8RW/fuG58FmebvXkBevqh47UacN9eQUlx6Eo1JP3gqTN6u/iC4Oplk5QowMQEHDikv7PnzgpePIf4OBMAAnT3QG6eHjJ9h6CtRVBZAXGxyxxQ6SiUY75AHcsXtLcKWprgUgnscoYecMH2op5+WLtBcue2crapVWKCIDFhfovFombQr+lpZeFJSZM8fSbN8R8MpuEfcPI0rIqR7D8ocZVL3r2XTE3J5VuiweTzKdu6nl4oKzdRBk3zHLQALUAL0AK0AC3AZa5w/e6/0LwZ9L/jbAZp30EPMxtcIOQvl2MHql1wzV4AAAAASUVORK5CYII="/></td>
-                <td><input name="moveRight" value="Right" title="Move camera right" onmousedown='startPtz("ptzMoveRight")' onmouseup='stopPtz()' onmouseleave='stopPtz()' type="image" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wYZFREOI2GGYwAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAKTSURBVGje7doxT9tAFMDx/5mDbJmQUCQmGCLBEBjigQjJJMDAnKGV2k58gA60rF078SE6sKQb2UhwxJaBhYQs2GIiCyzJAE6kXCdEqdSqdhL7YvltPt2d9Lt359OzLBp2SxHjMLrdbmxx1WoVAyCOyGq1CoB8aeh2u7x7vxcL3Ncv31+3KDGPBJgAE2AC1AsohMAwZmddpJ/OqVSK5eVl0uk0juPQ7/dRSsUDKIQgk8lweHhIPp/n8vKSSqXC7e0tg8FAW6j0uz0zmQybm5usr6+Ty+WwbZvz83Mcx9ESOlcuf/r28lD5+eOfnZ+enri7u+Px8ZHRaEQ+n6dQKJDNZllcXKTf79Pr9RiNRpGiCoW9YBn0PI+rqyva7TYrKyuUSiV2dnYwTRPTNLEsS7uMSr8DlFI8Pz/T6XRwHIdaraY1VAYdqJTC8zztoXLcCXSHyklNpCtUTnpC3aByWiunC1RO+wxEDZVhvc2igoYGjAoaOjAo1HVdPM/zDY0M6AdaLBZpNpucnZ3R6XQYDoezA/wbtF6vs7+/z8HBAZZlUSwW2dra4vj4mJubm//OpNaluRDiteyZm2NjY4O1tbU37TOTQSEECwsLrK6usru7i2VZmKYJgG3bXF9f47oujUbDVzkmdYY1m00uLi6o1Wq4rstgMPBda0rdYTN3TYQFCx0YNiw0YFSwqQOjhk0NqAts4kDdYBMD6gobG6g7bCxgKpXSHhYYuLS0RLlcplQqaQ0LBDQMg+3tbY6Ojpifn9caFgiolKLVanF6esr9/T31el1bWGCg4zicnJzQ6/W0hgU+g8PhkIeHB+1hY1X0s4LT/pNFAkyACTABah9v7sGPHz7HN4Mv/zjHIX7/B92IG+5P5C/SIv4x5wpguQAAAABJRU5ErkJggg=="/></td>
-              </tr>
-              <tr>
-                <td><input name="moveDownLeft" value="DownLeft" title="Move camera down and left" onmousedown='startPtz("ptzMoveBottomLeft")' onmouseup='stopPtz()' onmouseleave='stopPtz()' type="image" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wYaCzU2/ob+zwAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAKCSURBVGje7dqxa+JQHMDx74uFTjVUUOlkcdSCVHCpLgoHHR174P0Pt9xN+Qfu7+jSpaMguOQWpR10CeIgFlwEqYLRUc1N3nnCcdfk2b6+yxszBD75fZOQR8R32/HQeBnj8VhbXL1exwDQEVmv1wE42h4Yj8fcfPygBe7rl2+/EkXzFQJDYAgMge8TaBgGhvH21+/oECc9OTkhn88D0Ol0WCwW+kxQCEEul8OyLCzLIpfLIYTQK9F4PM7Z2RnHx8f63YOmaVIqlUilUjw+PuI4Dp7n6QEUQnBxcUGhUGA0GtFqtZjP53pNMB6PE4vFmM1mTCYTvRLdzfPh4eHN85QKVDFP6RNULU+pQBXzlAZUNU+pE1QxT2lAVfOUAlQ5T2kTVDVPKUCV8wwMVD1PKRNUOc/AQNXzDAR87TwjkQiRSOR192QOned20yqRSFAqlQCwbZvn5+fDA3fzbDQa0vLcokzTJJvNkkwmub6+plKpsFqtsCyL+/t7NpvN4YCy89xHJRIJisUihUKBWCzG+fk5y+US13VfL9Ggef4NlUqlGI1GzGYzms0m/X6f6XSKbdv/PD3fQL95vgTVaDRotVpMJhMcx/k5vZfgfAFfmmcQ1Pa8Qe7to0Pk+daoQMA/5akSyjdwP892u81iseD09FQpVKAJbvN0XZdkMkm1WuXq6koplG+gaZqUy2XS6TS9Xo9arUY0GlUO5QsohCCdTnN5ecl6vSaTyfD09KQkyhfQ8zwGgwF3d3cAdLtdbNtWEuU7Udd1ub29pd1uMxwOlUUFesi4rku321UaFfh78L3gpO2qhcAQGAJD4H8L/O09+Kn2Wd8Jbv9x1mHt/oNu6IbbR/4Ama4hfb8o4ZQAAAAASUVORK5CYII="/></td>
-                <td><input name="moveDown" value="Down" title="Move camera down" onmousedown='startPtz("ptzMoveDown")' onmouseup='stopPtz()' onmouseleave='stopPtz()' type="image" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wYZFREjZr7aFgAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAKtSURBVGje7dqxTxpRHMDx77t43GbciImTkJgYN/VmFMpA4mIc2qR1de3SMjI3/CuOsqkcOpjcSiMLdyOMJjpxJrxOWGIa48H7vbaXeyOwfPm897h3nOoFPzUZHs54PM5sXKfTwQHIYmSn0wFgZfbCeDzm46cPmYj7/u3H7ylKxkcemAfmgXngvxWolEIp9d8ErqT5sOd5rK+vo5RiNBoxmUzsSTgOWmu01jKCSik2NjY4Ozuj1Wqxs7NjTbJYLHJ8fMzW1hau68oFrq6usr+/z9HREY1GA8/zxOM8z+Pk5IR2u83p6Slra2upvth3B06nU6Io4vb2liRJ2N3dZXNzU1RRKUWpVKJareK6LqPRiMfHx1TTNNUm8/T0xPn5OXd3d+zt7VGtVikUCmKBhUKBWq2G7/uEYcj19TVJksjtolprhsMhQRAAcHBwQKlUElGc6VUqFQC63S5RFMltMrORJAmXl5eEYYjv+2KKr/Wurq5S6y0UqLUmiiJRRVN6C1/JSCua0ls4UFLRpN5S16JSiib1lgqUUDStt/RpwrSiab2lA00qSugZOQ+aUpTQMxJoQlFKz9iJfllFKT1jgcsoSuoZvSezqKKkntHARRSl9YzfVUurKK1nPDCNog0944FpFG3oiQS+R9GWnkjgexRt6YkFvqVoU08s8C1Fm3qigX9SLJfLlMtla3qQ8r+JRRUrlQq+71Ov11FKWdMTD5xX9H2fRqPx8p4NPfHAecXDw8OXqRkEgRU90TU4rxjHMWEY4jgOruvS7/eJ41hcz0ogwGQy4eLigpubGx4eHojj2IqelSk6UxwMBjSbTba3t+n1ekyn0+wEAjw/P3N/f89gMLAWZzVwJmlj3Vlfg39z5IF5YB6YB9r7mfjy+Wt2BWfPOGdhzD+D7mQt7nXkL/kUZr8cN2RTAAAAAElFTkSuQmCC"/></td>
-                <td><input name="moveDownRight" value="DownRight" title="Move camera down and right" onmousedown='startPtz("ptzMoveBottomRight")' onmouseup='stopPtz()' onmouseleave='stopPtz()' type="image" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wYaCzYe4B4F9gAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAMkSURBVGje7Zq/SxtxGIefu0QcEhXv/DGKp4NDIORUxJghUUTcHSq0HXXt0g6SoYNL/44uDq1bwClpwQvkBB2i4JDJDMFTQnK3RMFcp7RWKObsXXM98m530z18nvf784Tv385tAlxirVYLLFwul0MECCJkLpcDINx5UavVeLW9Hgi4D+8//VKUgFcfsA/YB+wDBhtQFEVE0bvPCPcSbmhoCFVVATg9PcWyrOAkKAgC8XicbDZLNpslHo8jCEKwEgQYHBxEkiTGx8eD1YO2bXN+fo6u60xNTZFKpRgZGQnWINNsNikWi1xdXbG4uEgsFnNd056PooZhUK/XPdO0p4AdTUulkmea9jxBrzX1xUrGS017Dui1pr5I0EtNfbPY9kpTXwB6qalvEvRKU1/tB73Q1DeAXmnqqwS90NR3RxZua+orQC80dQwYCoUIhUL/jaaOdvRjY2Ok02kAjo+PMQwDgHa77VtNuwYURZFMJsP+/j7hcJh8Ps/R0RHX19dcXFzQbDZdgX2s6e7uLqlUikKhQKPR+DdnMoIgEIlE2N7eZnl5mXq9zsnJCZqmYRiGK7AdTTc3N39qqmkatm17B9hutykUCuzt7SHLMnNzcywsLCDLMjs7O2xsbLgK65amjhK8vb3l8PAQgOHhYWKxGBMTEySTSZaWllyDdVPT0NbW24+dhy9fP3fVI7Zt02q1qFarXF5eous65XIZXdcxDANZlpFlmdXVVVRVJZlMMjs7SyQSQZIkLMvi/v4eQRD+qN3d3R3RaJT5+XlGR0cpl8tUq9WuoFZW1l/eg09hARqNBpqmAZDP511L1g1NHSf4XLmZrGmazMzMsLa2xs3NDaVSiVar5ShB1wHdhLUsi2g0iqqqjjR1TVGvNS4Wi0xOTmKa5os1/ad3Ey+BNU2TgYEBFEUhk8k4Hk17dvnSLawkSUxPT/Pw8EAikUBRFM7Ozrqe9Ht+u9QNbDqdJpFIcHBwQKVScbSi8QVgN7CKolCpVDBN0789+DewTrT09Y7+OdjAAgbmTKYP2AfsAwarfpsH37x+F9wEO/84B6Ee/4MuBg3uKeQPaDR2V8/iil4AAAAASUVORK5CYII="/></td>
-              </tr>
-            </tbody>
-          </table>
+
+            <img
+                src=""
+                id="webcamSnapshot"
+            />
+
+
+            <table id="ptzControls">
+
+                <tbody>
+
+                    <tr>
+
+                        <td>
+                            <input
+                                name="moveUpLeft"
+                                value="UpLeft"
+                                title="Move camera up and left"
+                                onmousedown='startPtz("ptzMoveTopLeft")'
+                                onmouseup="stopPtz()"
+                                onmouseleave="stopPtz()"
+                                type="image"
+                                src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wYaCzcHnW6cdwAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAANESURBVGje7Zq/TyJpHIefcamMUZlJsLORTgt1oibQDdmo/RZssl6nttfsNjZX2NzfcZZntKGwgbkoJIwmhEAMlYnRBAFFBi0Ag+9V7LJ7uZMfw/LehLebmbwzeebzzDvzft9R/jKzAhe3sXw+71q4SCTCGIAbISORCACe1o58Pk/443tXwH35/Ps3RXF5GwGOAEeAI0D5ABVFcS/g5OQkS0tLTE9PoyiK9LCebuG2trYIh8OkUilM06RYLJLNZrFtGwAhxP8TUFEU/H4/4XCYxcVFdF0nFApRLpdJJpMkEgkpYTsGFEJwdXVFKpVC13UuLy9pNBp4vV52d3fZ3NyUErYrRW3bJhaLYRgGLy8vHBwcUCgUCAQCrKysoKqqdLCebjuUSiXK5TKaplEoFDg+PiYajTI/P4/P5yMYDEoF++7Dh19+a238efjHmx2q1Sp+vx/DMCgUCiSTSSqVCre3t+RyOSzLIpPJYFkWpVIJr9eLqqqEQiF0XScYDDI3N8fExASaplGtVqnX646OxsHg+94B6/U64+PjLC8vo2kamUyGm5sbhBAIIajVakOHbQf09HKCdk19Pt8/jr++vgLw+PhIIpEAIBaLDUXjrhP8UdNisYhlWdRqtX8dfZ1IttFooChKR7B9J2jbNmdnZ6yvr7O2tsbCwgLxePzNi/ea7MXFBblcjoeHB0zT5P7+fnCjaKeavtW6gd3e3ub5+Zlqtcre3h6Hh4df+w8EUAhBNpvl/PycnZ0dAoEA0WiUSqXS0836L9iZmRk2NjYwDKOnZ7HnBHvVtBfYeDzOyckJAKZpdpxeX4BOaNop7N3dHUdHRwA0m82fM+Ft13R2dpZAIMDU1NTAvkiazWbXcH3P6FuaXl9ff9VUtvlh3yWLlqaqqg5E06EC/mxNh5Kg7Jo6UlWTWdO+AWXX1JEEZdbUscKvrJo6Aiizpo4lKKumjq5NyKipY4CyaupogjJq6vjymWyaOgooo6aOJ9iu6erq6tA19QzipKVSSZqfixwHFEKQTqfZ398HIJ1OD3UZbSAJPj09cXp6+l1dxVWAMoANbJBxVcliBDgCHAGOALt6TWx9+tW9Cbb+cXZDa/9MHHMb3I+QfwMHJ6eI4RIxlwAAAABJRU5ErkJggg=="
+                            />
+                        </td>
+
+                        <td>
+                            <input
+                                name="moveUp"
+                                value="Up"
+                                title="Move camera up"
+                                onmousedown='startPtz("ptzMoveUp")'
+                                onmouseup="stopPtz()"
+                                onmouseleave="stopPtz()"
+                                type="image"
+                                src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wYZFRApn3ACSQAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAJsSURBVGje7doxS+NgGMDx//u0BBe/gVPjIN2EEhqwENH7BHa4w7vvcMsduLvc6OiH6NgIYmlvcEntdqDFplAIdneyFcxN9Ty5A3PX900a8mzJ8vDPL5Ahr/re+xGT45HpdJrbuHa7jQDkMbLdbgNQXtyYTqe8//AuF3Ffv3z79YqS8ykCi8AisAgsAlcmsFQqUSqVjAaWTS3a2Njg4OAAgFarRRRF+QlcW1vj8PCQo6Oj5+uTkxMeHh5W/xVVSlGpVHBdF4A4jnFdl0qlglJq9QUty2J/f59arUa/3wegVquxt7dHGIbMZrPVFVRKYds2nucB4Ps+Z2dnAOzu7mLbtnbFsgk9x3EIgoDz83MAdnZ2cBzHiKKY0ut2u4xGI0ajEb1ez5iimNLrdDrM53Pm8zkXFxcEQfCsaFnWagX+SS8MQ+I4Jo5jwjA0pigm9RZjUlFM6i3GpKKY1jOtKKb1TCtKGnomFSUNPZOKkpaeKUVJS8+UoqSpZ0JR0tQzoShp6+lWlLT1dCtKFvR0KkoW9HQqSlb0dClKVvR0KUqW9HQoSpb0dChK1vSWrShJ9TY3N7XqLVsxUeD6+jrNZhPXdbm6utKmt0zFNweKCLZt02g0sCyLwWDAeDzWovc3Rc/zEv/TKCdZdn9/T7/fJ4oifN/X/l/hpWK9Xmd7e5utrS2Gw+GbH2yiwCiKOD09RSnF3d2dVr2Xe29vbzk+PqZarXJ5ecnT09PyBQFmsxmTyeR5sal5fHzk+vqam5ubRHGJA02Hvd77L7uLQwhFYBFYBBaB/zO/fSY+ffycX8HFGec8zMsz6JK3uNeRPwE9eF5yo2WGTAAAAABJRU5ErkJggg=="
+                            />
+                        </td>
+
+                        <td>
+                            <input
+                                name="moveUpRight"
+                                value="UpRight"
+                                title="Move camera up and right"
+                                onmousedown='startPtz("ptzMoveTopRight")'
+                                onmouseup="stopPtz()"
+                                onmouseleave="stopPtz()"
+                                type="image"
+                                src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wYaCzcUGdDdqQAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAKUSURBVGje7doxaxphGMDx/x0ZwykadBOyBXERRNFJh+6OLdTv0KVdXHXo58ji5iDCbbbE6OAggjqKTocaBZUMDnodiq0Nheb0feub457R4eDH81fvXk77/q1v4+LRLctyLa5er6MDuBFZr9cBuDp8YFkW7z+8cwXuy+evvxPF5eMBPaAH9IAeEEDTNPcBNU1D0zT8fj/xeBzDMBxf40rVTfl8PmKxGKFQiGw2Szwep1KpcH9/z3q9flvAv6EymQypVIpAIMDt7S273Q6AdrtNt9vFtm21gf9CRSIRJpMJq9WK4XBINBql2+0yGo1ejfvvwNeiFosFpmnSarUIh8MUCgVGoxGNRoPVaqXWd9Ap6vHxkdlsxmAwYL1ek8/nMQyDxWLBfD5X40fmHNRhQ/v9Hr/fTzqdJhKJYJom/X7fUZ5CgaJQx9eLxWKkUikmkwnNZtNxnmcDRaNeTigUIhAInJznSUBd/3lvYBiGFNRhfD4fmUzmrDwdA29ubshmswSDQe7u7kgkEkJRovN0BNR1nVwuR7lcxjAMrq+vGY/HwlAy8jwpUdu2eX5+plarYZom0+lUGEp0no6A+/2eRqNBsVgEoNlsMpvNhKFk5Ol4g09PT1SrVYBf94YyRlSeJz0u7XY7qbjjPDudzll5Kvc8KDpPJR94D3kul8uz81QOKDpPpYAy8lRug6LzVAooI09lgLLyVGqDMvJUBigrTyWAMvNUZoOy8lQCKDPPiwNl56nEBmXmeXGg7DwvCjzkmUwmpeWpRKLb7RbLsqTk6fjIQuTYtk2v16NUKgHQ6/WE53lRIMBms+Hh4QEQe3ClDFAmTNkjCw/oAT2gB3xT88ffROHjJ/du8PCOsxvm+B103W24l8gfaw4qxG1hhB0AAAAASUVORK5CYII="
+                            />
+                        </td>
+
+                    </tr>
+
+
+                    <tr>
+
+                        <td>
+                            <input
+                                name="moveLeft"
+                                value="Left"
+                                title="Move camera left"
+                                onmousedown='startPtz("ptzMoveLeft")'
+                                onmouseup="stopPtz()"
+                                onmouseleave="stopPtz()"
+                                type="image"
+                                src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAAB3RJTUUH3wYZFRE05W1f0QAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAJ5SURBVGje7do9q9pQGAfwf1SCi5ujkxF82QQJBhUiej+BDi22/QxdWnDr4NKP4Ny1jskgEe3goCFOhUR8AUHiHhejqJ1sL4Xb3hhNjiFnS+AMP54nyfmfHOrH4OcZHh6BzWbjWZwgCAgAgBeRgiAAAEKXG5vNBm/ePnkC9/nT1z8tCo8PH+gDfaAP9IEAEAgEQFGU5Xkh0mEURSESiYBhGBiGgfV6DdM0Hx9IURRomkYikUC9XkepVIIsy2i321itVjifz48JvMAYhkG1WgXP8+A4DjRNY71eW27TEMkwlmUBAKPRCIqiQBRF6Lr+6uoRAfwXbDweo9/vo9frYblcwjRNSzhXga+FLRYL7Pd7yzDXgE7BHAc6DXMM6Bbs7kC3YXcDkgK7OZA02M2ApMJsA0mH2QKGw2HE43GiYVcDY7EYGo0GOI5DLpcjFnYVMBgMolarodlsAgBkWYYoiuh2u5jP50TBbCf6C+SalE1sBY/HIzqdDsLh8O8WTafTKBaLGAwGkCSJuBYN1usfvlwuvne+/XeCYRhQFAWTyQS6roOmabAsi0KhgGQyiWg0iu12C8MwcDqdXEEVCk/23qK73Q6qqmKxWKDX66FSqaBcLoNlWbAsC57nialoyM4zaJom8VDbKxnSoTdbi5IKvXmaIA16tzxICvTuid5tqGN7Mm5BHd9Vcxrq2r6oU1DXd7atQmezGQ6Hw+MArUDz+TxarRZUVX3cv0svQXmeRzabRSaTgaZpjwt8CSpJElKpFIbDoaWUQvwf3gtU0zRMp1PLEYx44HPoNZ8K/5SFD/SBPtAH3ixNvH/30bsVvJxx9sJ4fgY94DXc38hfGRf3Q08k5rwAAAAASUVORK5CYII="
+                            />
+                        </td>
+
+                        <td>
+                            <input
+                                name="resetPosition"
+                                value="Reset"
+                                title="Reset to home position"
+                                onmousedown='startPtz("ptzReset")'
+                                onmouseup="stopPtz()"
+                                onmouseleave="stopPtz()"
+                                type="image"
+                                src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wYaFQMuck55lgAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAANmSURBVGje7ZpLSFRRGMd/R1xIGxfKbCKyF7XJ55jaQ5wmi54gkSYaWLselFhpi94ZNVqiIS5LKBGKCMJJfJdWPhpLrUWRaS5kQHThZranxWW4947Tw8cd9Xb/MHC+M9zvm9/9vjn3fIcr3rz+IjGxwrxer2nh3G43YQBmhHS73QCE+ye8Xi9HczNNAVd80aWWKCaXBWgBWoAWoAVoAf7PgOFGOl+xAmI3Q3o6bN8GmzZCZCRMT8PXb/D2HXR2wtBn8PmWEeD6dXC+CLKPiKDfR0XBtq3Kp+SiMvf0meR+BQz/WMIlGhkJNdXQ2y1+C/c7ZR8R9HYLaqoVP0sug/YkaGoMDvXxk6StHTwe+D4MG9aD3Q7OnZCYoL8mJ1uQkw179ko8/UsEcHcm1NfNhHv8RPKoFgaH9PNjY9DaBnddEBcrOV4Ax/L11zc1CnLzJM0ti1yiaakz4Tq7JM5MSWHRTLhADQ5BYRE4MyWdXfrDhfo6QVrqIgLabNDwUg9X9UCSdRgGBmfna2AQsg4r12vV8FJgsy0SYE213i67J7lZOr87frNU8fOnOCEBtCeBI0PN3qtGiatsYRYsV5nizy9HhsCeFGLA0lt6+9r1hX1+BfoLjGcoYHQ0JNvV7FVWSUZGFxZwZFTx61eyXRAdHSLA1BS9/bDWmG1WoN/AuIYBOneq4+YWyfi4MYDj44r/YHENBdyyRR13dBjbDWj9a+MaChizWrMNGzAWUOtfG3dJtEvz0dTEzK1fRIRgakLTldikMRn8OaaOE+ONAfzbj/8XuDkD9vWpY4fDhEcWbe3aTkKwcmVos/iv2ZszYE+v3j5RYFwGAmFmAzdnwMlJ+OBRAxWeE6xdY6ISBbh8RW/fuG58FmebvXkBevqh47UacN9eQUlx6Eo1JP3gqTN6u/iC4Oplk5QowMQEHDikv7PnzgpePIf4OBMAAnT3QG6eHjJ9h6CtRVBZAXGxyxxQ6SiUY75AHcsXtLcKWprgUgnscoYecMH2op5+WLtBcue2crapVWKCIDFhfovFombQr+lpZeFJSZM8fSbN8R8MpuEfcPI0rIqR7D8ocZVL3r2XTE3J5VuiweTzKdu6nl4oKzdRBk3zHLQALUAL0AK0AC3AZa5w/e6/0LwZ9L/jbAZp30EPMxtcIOQvl2MHql1wzV4AAAAASUVORK5CYII="
+                            />
+                        </td>
+
+                        <td>
+                            <input
+                                name="moveRight"
+                                value="Right"
+                                title="Move camera right"
+                                onmousedown='startPtz("ptzMoveRight")'
+                                onmouseup="stopPtz()"
+                                onmouseleave="stopPtz()"
+                                type="image"
+                                src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAAB3RJTUUH3wYZFREOI2GGYwAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAKTSURBVGje7doxT9tAFMDx/5mDbJmQUCQmGCLBEBjigQjJJMDAnKGV2k58gA60rF078SE6sKQb2UhwxJaBhYQs2GIiCyzJAE6kXCdEqdSqdhL7YvltPt2d9Lt359OzLBp2SxHjMLrdbmxx1WoVAyCOyGq1CoB8aeh2u7x7vxcL3Ncv31+3KDGPBJgAE2AC1AsohMAwZmddpJ/OqVSK5eVl0uk0juPQ7/dRSsUDKIQgk8lweHhIPp/n8vKSSqXC7e0tg8FAW6j0uz0zmQybm5usr6+Ty+WwbZvz83Mcx9ESOlcuf/r28lD5+eOfnZ+enri7u+Px8ZHRaEQ+n6dQKJDNZllcXKTf79Pr9RiNRpGiCoW9YBn0PI+rqyva7TYrKyuUSiV2dnYwTRPTNLEsS7uMSr8DlFI8Pz/T6XRwHIdaraY1VAYdqJTC8zztoXLcCXSHyklNpCtUTnpC3aByWiunC1RO+wxEDZVhvc2igoYGjAoaOjAo1HVdPM/zDY0M6AdaLBZpNpucnZ3R6XQYDoezA/wbtF6vs7+/z8HBAZZlUSwW2dra4vj4mJubm//OpNaluRDiteyZm2NjY4O1tbU37TOTQSEECwsLrK6usru7i2VZmKYJgG3bXF9f47oujUbDVzkmdYY1m00uLi6o1Wq4rstgMPBda0rdYTN3TYQFCx0YNiw0YFSwqQOjhk0NqAts4kDdYBMD6gobG6g7bCxgKpXSHhYYuLS0RLlcplQqaQ0LBDQMg+3tbY6Ojpifn9caFgiolKLVanF6esr9/T31el1bWGCg4zicnJzQ6/W0hgU+g8PhkIeHB+1hY1X0s4LT/pNFAkyACTABah9v7sGPHz7HN4Mv/zjHIX7/B92IG+5P5C/SIv4x5wpguQAAAABJRU5ErkJggg=="
+                            />
+                        </td>
+
+                    </tr>
+
+
+                    <tr>
+
+                        <td>
+                            <input
+                                name="moveDownLeft"
+                                value="DownLeft"
+                                title="Move camera down and left"
+                                onmousedown='startPtz("ptzMoveBottomLeft")'
+                                onmouseup="stopPtz()"
+                                onmouseleave="stopPtz()"
+                                type="image"
+                                src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAAB3RJTUUH3wYaCzU2/ob+zwAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAKCSURBVGje7dqxa+JQHMDx74uFTjVUUOlkcdSCVHCpLgoHHR174P0Pt9xN+Qfu7+jSpaMguOQWpR10CeIgFlwEqYLRUc1N3nnCcdfk2b6+yxszBD75fZOQR8R32/HQeBnj8VhbXL1exwDQEVmv1wE42h4Yj8fcfPygBe7rl2+/EkXzFQJDYAgMge8TaBgGhvH21+/oECc9OTkhn88D0Ol0WCwW+kxQCEEul8OyLCzLIpfLIYTQK9F4PM7Z2RnHx8f63YOmaVIqlUilUjw+PuI4Dp7n6QEUQnBxcUGhUGA0GtFqtZjP53pNMB6PE4vFmM1mTCYTvRLdzfPh4eHN85QKVDFP6RNULU+pQBXzlAZUNU+pE1QxT2lAVfOUAlQ5T2kTVDVPKUCV8wwMVD1PKRNUOc/AQNXzDAR87TwjkQiRSOR192QOned20yqRSFAqlQCwbZvn5+fDA3fzbDQa0vLcokzTJJvNkkwmub6+plKpsFqtsCyL+/t7NpvN4YCy89xHJRIJisUihUKBWCzG+fk5y+US13VfL9Ggef4NlUqlGI1GzGYzms0m/X6f6XSKbdv/PD3fQL95vgTVaDRotVpMJhMcx/k5vZfgfAFfmmcQ1Pa8Qe7to0Pk+daoQMA/5akSyjdwP892u81iseD09FQpVKAJbvN0XZdkMkm1WuXq6koplG+gaZqUy2XS6TS9Xo9arUY0GlUO5QsohCCdTnN5ecl6vSaTyfD09KQkyhfQ8zwGgwF3d3cAdLtdbNtWEuU7Udd1ub29pd1uMxwOlUUFesi4rku321UaFfh78L3gpO2qhcAQGAJD4H8L/O09+Kn2Wd8Jbv9x1mHt/oNu6IbbR/4Ama4hfb8o4ZQAAAAASUVORK5CYII="
+                            />
+                        </td>
+
+                        <td>
+                            <input
+                                name="moveDown"
+                                value="Down"
+                                title="Move camera down"
+                                onmousedown='startPtz("ptzMoveDown")'
+                                onmouseup="stopPtz()"
+                                onmouseleave="stopPtz()"
+                                type="image"
+                                src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAAB3RJTUUH3wYZFREjZr7aFgAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAKtSURBVGje7dqxTxpRHMDx77t43GbciImTkJgYN/VmFMpA4mIc2qR1de3SMjI3/CuOsqkcOpjcSiMLdyOMJjpxJrxOWGIa48H7vbaXeyOwfPm897h3nOoFPzUZHs54PM5sXKfTwQHIYmSn0wFgZfbCeDzm46cPmYj7/u3H7ylKxkcemAfmgXngvxWolEIp9d8ErqT5sOd5rK+vo5RiNBoxmUzsSTgOWmu01jKCSik2NjY4Ozuj1Wqxs7NjTbJYLHJ8fMzW1hau68oFrq6usr+/z9HREY1GA8/zxOM8z+Pk5IR2u83p6Slra2upvth3B06nU6Io4vb2liRJ2N3dZXNzU1RRKUWpVKJareK6LqPRiMfHx1TTNNUm8/T0xPn5OXd3d+zt7VGtVikUCmKBhUKBWq2G7/uEYcj19TVJksjtolprhsMhQRAAcHBwQKlUElGc6VUqFQC63S5RFMltMrORJAmXl5eEYYjv+2KKr/Wurq5S6y0UqLUmiiJRRVN6C1/JSCua0ls4UFLRpN5S16JSiib1lgqUUDStt/RpwrSiab2lA00qSugZOQ+aUpTQMxJoQlFKz9iJfllFKT1jgcsoSuoZvSezqKKkntHARRSl9YzfVUurKK1nPDCNog0944FpFG3oiQS+R9GWnkjgexRt6YkFvqVoU08s8C1Fm3qigX9SLJfLlMtla3qQ8r+JRRUrlQq+71Ov11FKWdMTD5xX9H2fRqPx8p4NPfHAecXDw8OXqRkEgRU90TU4rxjHMWEY4jgOruvS7/eJ41hcz0ogwGQy4eLigpubGx4eHojj2IqelSk6UxwMBjSbTba3t+n1ekyn0+wEAjw/P3N/f89gMLAWZzVwJmlj3Vlfg39z5IF5YB6YB9r7mfjy+Wt2BWfPOGdhzD+D7mQt7nXkL/kUZr8cN2RTAAAAAElFTkSuQmCC"
+                            />
+                        </td>
+
+                        <td>
+                            <input
+                                name="moveDownRight"
+                                value="DownRight"
+                                title="Move camera down and right"
+                                onmousedown='startPtz("ptzMoveBottomRight")'
+                                onmouseup="stopPtz()"
+                                onmouseleave="stopPtz()"
+                                type="image"
+                                src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAAB3RJTUUH3wYaCzYe4B4F9gAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAMkSURBVGje7Zq/SxtxGIefu0QcEhXv/DGKp4NDIORUxJghUUTcHSq0HXXt0g6SoYNL/44uDq1bwClpwQvkBB2i4JDJDMFTQnK3RMFcp7RWKObsXXM98m530z18nvf784Tv385tAlxirVYLLFwul0MECCJkLpcDINx5UavVeLW9Hgi4D+8//VKUgFcfsA/YB+wDBhtQFEVE0bvPCPcSbmhoCFVVATg9PcWyrOAkKAgC8XicbDZLNpslHo8jCEKwEgQYHBxEkiTGx8eD1YO2bXN+fo6u60xNTZFKpRgZGQnWINNsNikWi1xdXbG4uEgsFnNd056PooZhUK/XPdO0p4AdTUulkmea9jxBrzX1xUrGS017Dui1pr5I0EtNfbPY9kpTXwB6qalvEvRKU1/tB73Q1DeAXmnqqwS90NR3RxZua+orQC80dQwYCoUIhUL/jaaOdvRjY2Ok02kAjo+PMQwDgHa77VtNuwYURZFMJsP+/j7hcJh8Ps/R0RHX19dcXFzQbDZdgX2s6e7uLqlUikKhQKPR+DdnMoIgEIlE2N7eZnl5mXq9zsnJCZqmYRiGK7AdTTc3N39qqmkatm17B9hutykUCuzt7SHLMnNzcywsLCDLMjs7O2xsbLgK65amjhK8vb3l8PAQgOHhYWKxGBMTEySTSZaWllyDdVPT0NbW24+dhy9fP3fVI7Zt02q1qFarXF5eous65XIZXdcxDANZlpFlmdXVVVRVJZlMMjs7SyQSQZIkLMvi/v4eQRD+qN3d3R3RaJT5+XlGR0cpl8tUq9WuoFZW1l/eg09hARqNBpqmAZDP511L1g1NHSf4XLmZrGmazMzMsLa2xs3NDaVSiVar5ShB1wHdhLUsi2g0iqqqjjR1TVGvNS4Wi0xOTmKa5os1/ad3Ey+BNU2TgYEBFEUhk8k4Hk17dvnSLawkSUxPT/Pw8EAikUBRFM7Ozrqe9Ht+u9QNbDqdJpFIcHBwQKVScbSi8QVgN7CKolCpVDBN0789+DewTrT09Y7+OdjAAgbmTKYP2AfsAwarfpsH37x+F9wEO/84B6Ee/4MuBg3uKeQPaDR2V8/iil4AAAAASUVORK5CYII="
+                            />
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
         </div>
+
+
+        <!-- CAMERA 2 -->
+
         <div class="cameraContainer">
-          <img src="" id="webcamSnapshot2"/>
-          <table id="ptzControls2">
-            <tbody>
-              <tr>
-                <td><input name="moveUpLeft" value="UpLeft" title="Move camera up and left" onmousedown='startPtz2("ptzMoveTopLeft")' onmouseup='stopPtz()' onmouseleave='stopPtz()' type="image" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wYaCzcHnW6cdwAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAANESURBVGje7Zq/TyJpHIefcamMUZlJsLORTgt1oibQDdmo/RZssl6nttfsNjZX2NzfcZZntKGwgbkoJIwmhEAMlYnRBAFFBi0Ag+9V7LJ7uZMfw/LehLebmbwzeebzzDvzft9R/jKzAhe3sXw+71q4SCTCGIAbISORCACe1o58Pk/443tXwH35/Ps3RXF5GwGOAEeAI0D5ABVFcS/g5OQkS0tLTE9PoyiK9LCebuG2trYIh8OkUilM06RYLJLNZrFtGwAhxP8TUFEU/H4/4XCYxcVFdF0nFApRLpdJJpMkEgkpYTsGFEJwdXVFKpVC13UuLy9pNBp4vV52d3fZ3NyUErYrRW3bJhaLYRgGLy8vHBwcUCgUCAQCrKysoKqqdLCebjuUSiXK5TKaplEoFDg+PiYajTI/P4/P5yMYDEoF++7Dh19+a238efjHmx2q1Sp+vx/DMCgUCiSTSSqVCre3t+RyOSzLIpPJYFkWpVIJr9eLqqqEQiF0XScYDDI3N8fExASaplGtVqnX646OxsHg+94B6/U64+PjLC8vo2kamUyGm5sbhBAIIajVakOHbQf09HKCdk19Pt8/jr++vgLw+PhIIpEAIBaLDUXjrhP8UdNisYhlWdRqtX8dfZ1IttFooChKR7B9J2jbNmdnZ6yvr7O2tsbCwgLxePzNi/ea7MXFBblcjoeHB0zT5P7+fnCjaKeavtW6gd3e3ub5+Zlqtcre3h6Hh4df+w8EUAhBNpvl/PycnZ0dAoEA0WiUSqXS0836L9iZmRk2NjYwDKOnZ7HnBHvVtBfYeDzOyckJAKZpdpxeX4BOaNop7N3dHUdHRwA0m82fM+Ft13R2dpZAIMDU1NTAvkiazWbXcH3P6FuaXl9ff9VUtvlh3yWLlqaqqg5E06EC/mxNh5Kg7Jo6UlWTWdO+AWXX1JEEZdbUscKvrJo6Aiizpo4lKKumjq5NyKipY4CyaupogjJq6vjymWyaOgooo6aOJ9iu6erq6tA19QzipKVSSZqfixwHFEKQTqfZ398HIJ1OD3UZbSAJPj09cXp6+l1dxVWAMoANbJBxVcliBDgCHAGOALt6TWx9+tW9Cbb+cXZDa/9MHHMb3I+QfwMHJ6eI4RIxlwAAAABJRU5ErkJggg=="/></td>
-                <td><input name="moveUp" value="Up" title="Move camera up" onmousedown='startPtz2("ptzMoveUp")' onmouseup='stopPtz()' onmouseleave='stopPtz()' type="image" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wYZFRApn3ACSQAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAJsSURBVGje7doxS+NgGMDx//u0BBe/gVPjIN2EEhqwENH7BHa4w7vvcMsduLvc6OiH6NgIYmlvcEntdqDFplAIdneyFcxN9Ty5A3PX900a8mzJ8vDPL5Ahr/re+xGT45HpdJrbuHa7jQDkMbLdbgNQXtyYTqe8//AuF3Ffv3z79YqS8ykCi8AisAgsAlcmsFQqUSqVjAaWTS3a2Njg4OAAgFarRRRF+QlcW1vj8PCQo6Oj5+uTkxMeHh5W/xVVSlGpVHBdF4A4jnFdl0qlglJq9QUty2J/f59arUa/3wegVquxt7dHGIbMZrPVFVRKYds2nucB4Ps+Z2dnAOzu7mLbtnbFsgk9x3EIgoDz83MAdnZ2cBzHiKKY0ut2u4xGI0ajEb1ez5iimNLrdDrM53Pm8zkXFxcEQfCsaFnWagX+SS8MQ+I4Jo5jwjA0pigm9RZjUlFM6i3GpKKY1jOtKKb1TCtKGnomFSUNPZOKkpaeKUVJS8+UoqSpZ0JR0tQzoShp6+lWlLT1dCtKFvR0KkoW9HQqSlb0dClKVvR0KUqW9HQoSpb0dChK1vSWrShJ9TY3N7XqLVsxUeD6+jrNZhPXdbm6utKmt0zFNweKCLZt02g0sCyLwWDAeDzWovc3Rc/zEv/TKCdZdn9/T7/fJ4oifN/X/l/hpWK9Xmd7e5utrS2Gw+GbH2yiwCiKOD09RSnF3d2dVr2Xe29vbzk+PqZarXJ5ecnT09PyBQFmsxmTyeR5sal5fHzk+vqam5ubRHGJA02Hvd77L7uLQwhFYBFYBBaB/zO/fSY+ffycX8HFGec8zMsz6JK3uNeRPwE9eF5yo2WGTAAAAABJRU5ErkJggg=="/></td>
-                <td><input name="moveUpRight" value="UpRight" title="Move camera up and right" onmousedown='startPtz2("ptzMoveTopRight")' onmouseup='stopPtz()' onmouseleave='stopPtz()' type="image" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wYaCzcUGdDdqQAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAKUSURBVGje7doxaxphGMDx/x0ZwykadBOyBXERRNFJh+6OLdTv0KVdXHXo58ji5iDCbbbE6OAggjqKTocaBZUMDnodiq0Nheb0feub457R4eDH81fvXk77/q1v4+LRLctyLa5er6MDuBFZr9cBuDp8YFkW7z+8cwXuy+evvxPF5eMBPaAH9IAeEEDTNPcBNU1D0zT8fj/xeBzDMBxf40rVTfl8PmKxGKFQiGw2Szwep1KpcH9/z3q9flvAv6EymQypVIpAIMDt7S273Q6AdrtNt9vFtm21gf9CRSIRJpMJq9WK4XBINBql2+0yGo1ejfvvwNeiFosFpmnSarUIh8MUCgVGoxGNRoPVaqXWd9Ap6vHxkdlsxmAwYL1ek8/nMQyDxWLBfD5X40fmHNRhQ/v9Hr/fTzqdJhKJYJom/X7fUZ5CgaJQx9eLxWKkUikmkwnNZtNxnmcDRaNeTigUIhAInJznSUBd/3lvYBiGFNRhfD4fmUzmrDwdA29ubshmswSDQe7u7kgkEkJRovN0BNR1nVwuR7lcxjAMrq+vGY/HwlAy8jwpUdu2eX5+plarYZom0+lUGEp0no6A+/2eRqNBsVgEoNlsMpvNhKFk5Ol4g09PT1SrVYBf94YyRlSeJz0u7XY7qbjjPDudzll5Kvc8KDpPJR94D3kul8uz81QOKDpPpYAy8lRug6LzVAooI09lgLLyVGqDMvJUBigrTyWAMvNUZoOy8lQCKDPPiwNl56nEBmXmeXGg7DwvCjzkmUwmpeWpRKLb7RbLsqTk6fjIQuTYtk2v16NUKgHQ6/WE53lRIMBms+Hh4QEQe3ClDFAmTNkjCw/oAT2gB3xT88ffROHjJ/du8PCOsxvm+B103W24l8gfaw4qxG1hhB0AAAAASUVORK5CYII="/></td>
-              </tr>
-              <tr>
-                <td><input name="moveLeft" value="Left" title="Move camera left" onmousedown='startPtz2("ptzMoveLeft")' onmouseup='stopPtz()' onmouseleave='stopPtz()' type="image" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wYZFRE05W1f0QAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAJ5SURBVGje7do9q9pQGAfwf1SCi5ujkxF82QQJBhUiej+BDi22/QxdWnDr4NKP4Ny1jskgEe3goCFOhUR8AUHiHhejqJ1sL4Xb3hhNjiFnS+AMP54nyfmfHOrH4OcZHh6BzWbjWZwgCAgAgBeRgiAAAEKXG5vNBm/ePnkC9/nT1z8tCo8PH+gDfaAP9IEAEAgEQFGU5Xkh0mEURSESiYBhGBiGgfV6DdM0Hx9IURRomkYikUC9XkepVIIsy2i321itVjifz48JvMAYhkG1WgXP8+A4DjRNY71eW27TEMkwlmUBAKPRCIqiQBRF6Lr+6uoRAfwXbDweo9/vo9frYblcwjRNSzhXga+FLRYL7Pd7yzDXgE7BHAc6DXMM6Bbs7kC3YXcDkgK7OZA02M2ApMJsA0mH2QKGw2HE43GiYVcDY7EYGo0GOI5DLpcjFnYVMBgMolarodlsAgBkWYYoiuh2u5jP50TBbCf6C+SalE1sBY/HIzqdDsLh8O8WTafTKBaLGAwGkCSJuBYN1usfvlwuvne+/XeCYRhQFAWTyQS6roOmabAsi0KhgGQyiWg0iu12C8MwcDqdXEEVCk/23qK73Q6qqmKxWKDX66FSqaBcLoNlWbAsC57nialoyM4zaJom8VDbKxnSoTdbi5IKvXmaIA16tzxICvTuid5tqGN7Mm5BHd9Vcxrq2r6oU1DXd7atQmezGQ6Hw+MArUDz+TxarRZUVX3cv0svQXmeRzabRSaTgaZpjwt8CSpJElKpFIbDoaWUQvwf3gtU0zRMp1PLEYx44HPoNZ8K/5SFD/SBPtAH3ixNvH/30bsVvJxx9sJ4fgY94DXc38hfGRf3Q08k5rwAAAAASUVORK5CYII="/></td>
-                <td><input name="resetPosition" value="Reset" title="Reset to home position" onmousedown='startPtz2("ptzReset")' onmouseup='stopPtz()' onmouseleave='stopPtz()' type="image" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wYaFQMuck55lgAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAANmSURBVGje7ZpLSFRRGMd/R1xIGxfKbCKyF7XJ55jaQ5wmi54gkSYaWLselFhpi94ZNVqiIS5LKBGKCMJJfJdWPhpLrUWRaS5kQHThZranxWW4947Tw8cd9Xb/MHC+M9zvm9/9vjn3fIcr3rz+IjGxwrxer2nh3G43YQBmhHS73QCE+ye8Xi9HczNNAVd80aWWKCaXBWgBWoAWoAVoAf7PgOFGOl+xAmI3Q3o6bN8GmzZCZCRMT8PXb/D2HXR2wtBn8PmWEeD6dXC+CLKPiKDfR0XBtq3Kp+SiMvf0meR+BQz/WMIlGhkJNdXQ2y1+C/c7ZR8R9HYLaqoVP0sug/YkaGoMDvXxk6StHTwe+D4MG9aD3Q7OnZCYoL8mJ1uQkw179ko8/UsEcHcm1NfNhHv8RPKoFgaH9PNjY9DaBnddEBcrOV4Ax/L11zc1CnLzJM0ti1yiaakz4Tq7JM5MSWHRTLhADQ5BYRE4MyWdXfrDhfo6QVrqIgLabNDwUg9X9UCSdRgGBmfna2AQsg4r12vV8FJgsy0SYE213i67J7lZOr87frNU8fOnOCEBtCeBI0PN3qtGiatsYRYsV5nizy9HhsCeFGLA0lt6+9r1hX1+BfoLjGcoYHQ0JNvV7FVWSUZGFxZwZFTx61eyXRAdHSLA1BS9/bDWmG1WoN/AuIYBOneq4+YWyfi4MYDj44r/YHENBdyyRR13dBjbDWj9a+MaChizWrMNGzAWUOtfG3dJtEvz0dTEzK1fRIRgakLTldikMRn8OaaOE+ONAfzbj/8XuDkD9vWpY4fDhEcWbe3aTkKwcmVos/iv2ZszYE+v3j5RYFwGAmFmAzdnwMlJ+OBRAxWeE6xdY6ISBbh8RW/fuG58FmebvXkBevqh47UacN9eQUlx6Eo1JP3gqTN6u/iC4Oplk5QowMQEHDikv7PnzgpePIf4OBMAAnT3QG6eHjJ9h6CtRVBZAXGxyxxQ6SiUY75AHcsXtLcKWprgUgnscoYecMH2op5+WLtBcue2crapVWKCIDFhfovFombQr+lpZeFJSZM8fSbN8R8MpuEfcPI0rIqR7D8ocZVL3r2XTE3J5VuiweTzKdu6nl4oKzdRBk3zHLQALUAL0AK0AC3AZa5w/e6/0LwZ9L/jbAZp30EPMxtcIOQvl2MHql1wzV4AAAAASUVORK5CYII="/></td>
-                <td><input name="moveRight" value="Right" title="Move camera right" onmousedown='startPtz2("ptzMoveRight")' onmouseup='stopPtz()' onmouseleave='stopPtz()' type="image" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wYZFREOI2GGYwAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAKTSURBVGje7doxT9tAFMDx/5mDbJmQUCQmGCLBEBjigQjJJMDAnKGV2k58gA60rF078SE6sKQb2UhwxJaBhYQs2GIiCyzJAE6kXCdEqdSqdhL7YvltPt2d9Lt359OzLBp2SxHjMLrdbmxx1WoVAyCOyGq1CoB8aeh2u7x7vxcL3Ncv31+3KDGPBJgAE2AC1AsohMAwZmddpJ/OqVSK5eVl0uk0juPQ7/dRSsUDKIQgk8lweHhIPp/n8vKSSqXC7e0tg8FAW6j0uz0zmQybm5usr6+Ty+WwbZvz83Mcx9ESOlcuf/r28lD5+eOfnZ+enri7u+Px8ZHRaEQ+n6dQKJDNZllcXKTf79Pr9RiNRpGiCoW9YBn0PI+rqyva7TYrKyuUSiV2dnYwTRPTNLEsS7uMSr8DlFI8Pz/T6XRwHIdaraY1VAYdqJTC8zztoXLcCXSHyklNpCtUTnpC3aByWiunC1RO+wxEDZVhvc2igoYGjAoaOjAo1HVdPM/zDY0M6AdaLBZpNpucnZ3R6XQYDoezA/wbtF6vs7+/z8HBAZZlUSwW2dra4vj4mJubm//OpNaluRDiteyZm2NjY4O1tbU37TOTQSEECwsLrK6usru7i2VZmKYJgG3bXF9f47oujUbDVzkmdYY1m00uLi6o1Wq4rstgMPBda0rdYTN3TYQFCx0YNiw0YFSwqQOjhk0NqAts4kDdYBMD6gobG6g7bCxgKpXSHhYYuLS0RLlcplQqaQ0LBDQMg+3tbY6Ojpifn9caFgiolKLVanF6esr9/T31el1bWGCg4zicnJzQ6/W0hgU+g8PhkIeHB+1hY1X0s4LT/pNFAkyACTABah9v7sGPHz7HN4Mv/zjHIX7/B92IG+5P5C/SIv4x5wpguQAAAABJRU5ErkJggg=="/></td>
-              </tr>
-              <tr>
-                <td><input name="moveDownLeft" value="DownLeft" title="Move camera down and left" onmousedown='startPtz2("ptzMoveBottomLeft")' onmouseup='stopPtz()' onmouseleave='stopPtz()' type="image" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wYaCzU2/ob+zwAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAKCSURBVGje7dqxa+JQHMDx74uFTjVUUOlkcdSCVHCpLgoHHR174P0Pt9xN+Qfu7+jSpaMguOQWpR10CeIgFlwEqYLRUc1N3nnCcdfk2b6+yxszBD75fZOQR8R32/HQeBnj8VhbXL1exwDQEVmv1wE42h4Yj8fcfPygBe7rl2+/EkXzFQJDYAgMge8TaBgGhvH21+/oECc9OTkhn88D0Ol0WCwW+kxQCEEul8OyLCzLIpfLIYTQK9F4PM7Z2RnHx8f63YOmaVIqlUilUjw+PuI4Dp7n6QEUQnBxcUGhUGA0GtFqtZjP53pNMB6PE4vFmM1mTCYTvRLdzfPh4eHN85QKVDFP6RNULU+pQBXzlAZUNU+pE1QxT2lAVfOUAlQ5T2kTVDVPKUCV8wwMVD1PKRNUOc/AQNXzDAR87TwjkQiRSOR192QOned20yqRSFAqlQCwbZvn5+fDA3fzbDQa0vLcokzTJJvNkkwmub6+plKpsFqtsCyL+/t7NpvN4YCy89xHJRIJisUihUKBWCzG+fk5y+US13VfL9Ggef4NlUqlGI1GzGYzms0m/X6f6XSKbdv/PD3fQL95vgTVaDRotVpMJhMcx/k5vZfgfAFfmmcQ1Pa8Qe7to0Pk+daoQMA/5akSyjdwP892u81iseD09FQpVKAJbvN0XZdkMkm1WuXq6koplG+gaZqUy2XS6TS9Xo9arUY0GlUO5QsohCCdTnN5ecl6vSaTyfD09KQkyhfQ8zwGgwF3d3cAdLtdbNtWEuU7Udd1ub29pd1uMxwOlUUFesi4rku321UaFfh78L3gpO2qhcAQGAJD4H8L/O09+Kn2Wd8Jbv9x1mHt/oNu6IbbR/4Ama4hfb8o4ZQAAAAASUVORK5CYII="/></td>
-                <td><input name="moveDown" value="Down" title="Move camera down" onmousedown='startPtz2("ptzMoveDown")' onmouseup='stopPtz()' onmouseleave='stopPtz()' type="image" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wYZFREjZr7aFgAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAKtSURBVGje7dqxTxpRHMDx77t43GbciImTkJgYN/VmFMpA4mIc2qR1de3SMjI3/CuOsqkcOpjcSiMLdyOMJjpxJrxOWGIa48H7vbaXeyOwfPm897h3nOoFPzUZHs54PM5sXKfTwQHIYmSn0wFgZfbCeDzm46cPmYj7/u3H7ylKxkcemAfmgXngvxWolEIp9d8ErqT5sOd5rK+vo5RiNBoxmUzsSTgOWmu01jKCSik2NjY4Ozuj1Wqxs7NjTbJYLHJ8fMzW1hau68oFrq6usr+/z9HREY1GA8/zxOM8z+Pk5IR2u83p6Slra2upvth3B06nU6Io4vb2liRJ2N3dZXNzU1RRKUWpVKJareK6LqPRiMfHx1TTNNUm8/T0xPn5OXd3d+zt7VGtVikUCmKBhUKBWq2G7/uEYcj19TVJksjtolprhsMhQRAAcHBwQKlUElGc6VUqFQC63S5RFMltMrORJAmXl5eEYYjv+2KKr/Wurq5S6y0UqLUmiiJRRVN6C1/JSCua0ls4UFLRpN5S16JSiib1lgqUUDStt/RpwrSiab2lA00qSugZOQ+aUpTQMxJoQlFKz9iJfllFKT1jgcsoSuoZvSezqKKkntHARRSl9YzfVUurKK1nPDCNog0944FpFG3oiQS+R9GWnkjgexRt6YkFvqVoU08s8C1Fm3qigX9SLJfLlMtla3qQ8r+JRRUrlQq+71Ov11FKWdMTD5xX9H2fRqPx8p4NPfHAecXDw8OXqRkEgRU90TU4rxjHMWEY4jgOruvS7/eJ41hcz0ogwGQy4eLigpubGx4eHojj2IqelSk6UxwMBjSbTba3t+n1ekyn0+wEAjw/P3N/f89gMLAWZzVwJmlj3Vlfg39z5IF5YB6YB9r7mfjy+Wt2BWfPOGdhzD+D7mQt7nXkL/kUZr8cN2RTAAAAAElFTkSuQmCC"/></td>
-                <td><input name="moveDownRight" value="DownRight" title="Move camera down and right" onmousedown='startPtz2("ptzMoveBottomRight")' onmouseup='stopPtz()' onmouseleave='stopPtz()' type="image" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wYaCzYe4B4F9gAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAMkSURBVGje7Zq/SxtxGIefu0QcEhXv/DGKp4NDIORUxJghUUTcHSq0HXXt0g6SoYNL/44uDq1bwClpwQvkBB2i4JDJDMFTQnK3RMFcp7RWKObsXXM98m530z18nvf784Tv385tAlxirVYLLFwul0MECCJkLpcDINx5UavVeLW9Hgi4D+8//VKUgFcfsA/YB+wDBhtQFEVE0bvPCPcSbmhoCFVVATg9PcWyrOAkKAgC8XicbDZLNpslHo8jCEKwEgQYHBxEkiTGx8eD1YO2bXN+fo6u60xNTZFKpRgZGQnWINNsNikWi1xdXbG4uEgsFnNd056PooZhUK/XPdO0p4AdTUulkmea9jxBrzX1xUrGS017Dui1pr5I0EtNfbPY9kpTXwB6qalvEvRKU1/tB73Q1DeAXmnqqwS90NR3RxZua+orQC80dQwYCoUIhUL/jaaOdvRjY2Ok02kAjo+PMQwDgHa77VtNuwYURZFMJsP+/j7hcJh8Ps/R0RHX19dcXFzQbDZdgX2s6e7uLqlUikKhQKPR+DdnMoIgEIlE2N7eZnl5mXq9zsnJCZqmYRiGK7AdTTc3N39qqmkatm17B9hutykUCuzt7SHLMnNzcywsLCDLMjs7O2xsbLgK65amjhK8vb3l8PAQgOHhYWKxGBMTEySTSZaWllyDdVPT0NbW24+dhy9fP3fVI7Zt02q1qFarXF5eous65XIZXdcxDANZlpFlmdXVVVRVJZlMMjs7SyQSQZIkLMvi/v4eQRD+qN3d3R3RaJT5+XlGR0cpl8tUq9WuoFZW1l/eg09hARqNBpqmAZDP511L1g1NHSf4XLmZrGmazMzMsLa2xs3NDaVSiVar5ShB1wHdhLUsi2g0iqqqjjR1TVGvNS4Wi0xOTmKa5os1/ad3Ey+BNU2TgYEBFEUhk8k4Hk17dvnSLawkSUxPT/Pw8EAikUBRFM7Ozrqe9Ht+u9QNbDqdJpFIcHBwQKVScbSi8QVgN7CKolCpVDBN0789+DewTrT09Y7+OdjAAgbmTKYP2AfsAwarfpsH37x+F9wEO/84B6Ee/4MuBg3uKeQPaDR2V8/iil4AAAAASUVORK5CYII="/></td>
-              </tr>
-            </tbody>
-          </table>
+
+            <img
+                src=""
+                id="webcamSnapshot2"
+            />
+
+
+            <table id="ptzControls2">
+
+                <tbody>
+
+                    <tr>
+
+                        <td>
+                            <input
+                                name="moveUpLeft"
+                                value="UpLeft"
+                                title="Move camera up and left"
+                                onmousedown='startPtz2("ptzMoveTopLeft")'
+                                onmouseup="stopPtz()"
+                                onmouseleave="stopPtz()"
+                                type="image"
+                                src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wYaCzcHnW6cdwAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAANESURBVGje7Zq/TyJpHIefcamMUZlJsLORTgt1oibQDdmo/RZssl6nttfsNjZX2NzfcZZntKGwgbkoJIwmhEAMlYnRBAFFBi0Ag+9V7LJ7uZMfw/LehLebmbwzeebzzDvzft9R/jKzAhe3sXw+71q4SCTCGIAbISORCACe1o58Pk/443tXwH35/Ps3RXF5GwGOAEeAI0D5ABVFcS/g5OQkS0tLTE9PoyiK9LCebuG2trYIh8OkUilM06RYLJLNZrFtGwAhxP8TUFEU/H4/4XCYxcVFdF0nFApRLpdJJpMkEgkpYTsGFEJwdXVFKpVC13UuLy9pNBp4vV52d3fZ3NyUErYrRW3bJhaLYRgGLy8vHBwcUCgUCAQCrKysoKqqdLCebjuUSiXK5TKaplEoFDg+PiYajTI/P4/P5yMYDEoF++7Dh19+a238efjHmx2q1Sp+vx/DMCgUCiSTSSqVCre3t+RyOSzLIpPJYFkWpVIJr9eLqqqEQiF0XScYDDI3N8fExASaplGtVqnX646OxsHg+94B6/U64+PjLC8vo2kamUyGm5sbhBAIIajVakOHbQf09HKCdk19Pt8/jr++vgLw+PhIIpEAIBaLDUXjrhP8UdNisYhlWdRqtX8dfZ1IttFooChKR7B9J2jbNmdnZ6yvr7O2tsbCwgLxePzNi/ea7MXFBblcjoeHB0zT5P7+fnCjaKeavtW6gd3e3ub5+Zlqtcre3h6Hh4df+w8EUAhBNpvl/PycnZ0dAoEA0WiUSqXS0836L9iZmRk2NjYwDKOnZ7HnBHvVtBfYeDzOyckJAKZpdpxeX4BOaNop7N3dHUdHRwA0m82fM+Ft13R2dpZAIMDU1NTAvkiazWbXcH3P6FuaXl9ff9VUtvlh3yWLlqaqqg5E06EC/mxNh5Kg7Jo6UlWTWdO+AWXX1JEEZdbUscKvrJo6Aiizpo4lKKumjq5NyKipY4CyaupogjJq6vjymWyaOgooo6aOJ9iu6erq6tA19QzipKVSSZqfixwHFEKQTqfZ398HIJ1OD3UZbSAJPj09cXp6+l1dxVWAMoANbJBxVcliBDgCHAGOALt6TWx9+tW9Cbb+cXZDa/9MHHMb3I+QfwMHJ6eI4RIxlwAAAABJRU5ErkJggg=="
+                            />
+                        </td>
+
+                        <td>
+                            <input
+                                name="moveUp"
+                                value="Up"
+                                title="Move camera up"
+                                onmousedown='startPtz2("ptzMoveUp")'
+                                onmouseup="stopPtz()"
+                                onmouseleave="stopPtz()"
+                                type="image"
+                                src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wYZFRApn3ACSQAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAJsSURBVGje7doxS+NgGMDx//u0BBe/gVPjIN2EEhqwENH7BHa4w7vvcMsduLvc6OiH6NgIYmlvcEntdqDFplAIdneyFcxN9Ty5A3PX900a8mzJ8vDPL5Ahr/re+xGT45HpdJrbuHa7jQDkMbLdbgNQXtyYTqe8//AuF3Ffv3z79YqS8ykCi8AisAgsAlcmsFQqUSqVjAaWTS3a2Njg4OAAgFarRRRF+QlcW1vj8PCQo6Oj5+uTkxMeHh5W/xVVSlGpVHBdF4A4jnFdl0qlglJq9QUty2J/f59arUa/3wegVquxt7dHGIbMZrPVFVRKYds2nucB4Ps+Z2dnAOzu7mLbtnbFsgk9x3EIgoDz83MAdnZ2cBzHiKKY0ut2u4xGI0ajEb1ez5iimNLrdDrM53Pm8zkXFxcEQfCsaFnWagX+SS8MQ+I4Jo5jwjA0pigm9RZjUlFM6i3GpKKY1jOtKKb1TCtKGnomFSUNPZOKkpaeKUVJS8+UoqSpZ0JR0tQzoShp6+lWlLT1dCtKFvR0KkoW9HQqSlb0dClKVvR0KUqW9HQoSpb0dChK1vSWrShJ9TY3N7XqLVsxUeD6+jrNZhPXdbm6utKmt0zFNweKCLZt02g0sCyLwWDAeDzWovc3Rc/zEv/TKCdZdn9/T7/fJ4oifN/X/l/hpWK9Xmd7e5utrS2Gw+GbH2yiwCiKOD09RSnF3d2dVr2Xe29vbzk+PqZarXJ5ecnT09PyBQFmsxmTyeR5sal5fHzk+vqam5ubRHGJA02Hvd77L7uLQwhFYBFYBBaB/zO/fSY+ffycX8HFGec8zMsz6JK3uNeRPwE9eF5yo2WGTAAAAABJRU5ErkJggg=="
+                            />
+                        </td>
+
+                        <td>
+                            <input
+                                name="moveUpRight"
+                                value="UpRight"
+                                title="Move camera up and right"
+                                onmousedown='startPtz2("ptzMoveTopRight")'
+                                onmouseup="stopPtz()"
+                                onmouseleave="stopPtz()"
+                                type="image"
+                                src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wYaCzcUGdDdqQAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAKUSURBVGje7doxaxphGMDx/x0ZwykadBOyBXERRNFJh+6OLdTv0KVdXHXo58ji5iDCbbbE6OAggjqKTocaBZUMDnodiq0Nheb0feub457R4eDH81fvXk77/q1v4+LRLctyLa5er6MDuBFZr9cBuDp8YFkW7z+8cwXuy+evvxPF5eMBPaAH9IAeEEDTNPcBNU1D0zT8fj/xeBzDMBxf40rVTfl8PmKxGKFQiGw2Szwep1KpcH9/z3q9flvAv6EymQypVIpAIMDt7S273Q6AdrtNt9vFtm21gf9CRSIRJpMJq9WK4XBINBql2+0yGo1ejfvvwNeiFosFpmnSarUIh8MUCgVGoxGNRoPVaqXWd9Ap6vHxkdlsxmAwYL1ek8/nMQyDxWLBfD5X40fmHNRhQ/v9Hr/fTzqdJhKJYJom/X7fUZ5CgaJQx9eLxWKkUikmkwnNZtNxnmcDRaNeTigUIhAInJznSUBd/3lvYBiGFNRhfD4fmUzmrDwdA29ubshmswSDQe7u7kgkEkJRovN0BNR1nVwuR7lcxjAMrq+vGY/HwlAy8jwpUdu2eX5+plarYZom0+lUGEp0no6A+/2eRqNBsVgEoNlsMpvNhKFk5Ol4g09PT1SrVYBf94YyRlSeJz0u7XY7qbjjPDudzll5Kvc8KDpPJR94D3kul8uz81QOKDpPpYAy8lRug6LzVAooI09lgLLyVGqDMvJUBigrTyWAMvNUZoOy8lQCKDPPiwNl56nEBmXmeXGg7DwvCjzkmUwmpeWpRKLb7RbLsqTk6fjIQuTYtk2v16NUKgHQ6/WE53lRIMBms+Hh4QEQe3ClDFAmTNkjCw/oAT2gB3xT88ffROHjJ/du8PCOsxvm+B103W24l8gfaw4qxG1hhB0AAAAASUVORK5CYII="
+                            />
+                        </td>
+
+                    </tr>
+
+
+                    <tr>
+
+                        <td>
+                            <input
+                                name="moveLeft"
+                                value="Left"
+                                title="Move camera left"
+                                onmousedown='startPtz2("ptzMoveLeft")'
+                                onmouseup="stopPtz()"
+                                onmouseleave="stopPtz()"
+                                type="image"
+                                src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAAB3RJTUUH3wYZFRE05W1f0QAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAJ5SURBVGje7do9q9pQGAfwf1SCi5ujkxF82QQJBhUiej+BDi22/QxdWnDr4NKP4Ny1jskgEe3goCFOhUR8AUHiHhejqJ1sL4Xb3hhNjiFnS+AMP54nyfmfHOrH4OcZHh6BzWbjWZwgCAgAgBeRgiAAAEKXG5vNBm/ePnkC9/nT1z8tCo8PH+gDfaAP9IEAEAgEQFGU5Xkh0mEURSESiYBhGBiGgfV6DdM0Hx9IURRomkYikUC9XkepVIIsy2i321itVjifz48JvMAYhkG1WgXP8+A4DjRNY71eW27TEMkwlmUBAKPRCIqiQBRF6Lr+6uoRAfwXbDweo9/vo9frYblcwjRNSzhXga+FLRYL7Pd7yzDXgE7BHAc6DXMM6Bbs7kC3YXcDkgK7OZA02M2ApMJsA0mH2QKGw2HE43GiYVcDY7EYGo0GOI5DLpcjFnYVMBgMolarodlsAgBkWYYoiuh2u5jP50TBbCf6C+SalE1sBY/HIzqdDsLh8O8WTafTKBaLGAwGkCSJuBYN1usfvlwuvne+/XeCYRhQFAWTyQS6roOmabAsi0KhgGQyiWg0iu12C8MwcDqdXEEVCk/23qK73Q6qqmKxWKDX66FSqaBcLoNlWbAsC57nialoyM4zaJom8VDbKxnSoTdbi5IKvXmaIA16tzxICvTuid5tqGN7Mm5BHd9Vcxrq2r6oU1DXd7atQmezGQ6Hw+MArUDz+TxarRZUVX3cv0svQXmeRzabRSaTgaZpjwt8CSpJElKpFIbDoaWUQvwf3gtU0zRMp1PLEYx44HPoNZ8K/5SFD/SBPtAH3ixNvH/30bsVvJxx9sJ4fgY94DXc38hfGRf3Q08k5rwAAAAASUVORK5CYII="
+                            />
+                        </td>
+
+                        <td>
+                            <input
+                                name="resetPosition"
+                                value="Reset"
+                                title="Reset to home position"
+                                onmousedown='startPtz2("ptzReset")'
+                                onmouseup="stopPtz()"
+                                onmouseleave="stopPtz()"
+                                type="image"
+                                src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wYaFQMuck55lgAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAANmSURBVGje7ZpLSFRRGMd/R1xIGxfKbCKyF7XJ55jaQ5wmi54gkSYaWLselFhpi94ZNVqiIS5LKBGKCMJJfJdWPhpLrUWRaS5kQHThZranxWW4947Tw8cd9Xb/MHC+M9zvm9/9vjn3fIcr3rz+IjGxwrxer2nh3G43YQBmhHS73QCE+ye8Xi9HczNNAVd80aWWKCaXBWgBWoAWoAVoAf7PgOFGOl+xAmI3Q3o6bN8GmzZCZCRMT8PXb/D2HXR2wtBn8PmWEeD6dXC+CLKPiKDfR0XBtq3Kp+SiMvf0meR+BQz/WMIlGhkJNdXQ2y1+C/c7ZR8R9HYLaqoVP0sug/YkaGoMDvXxk6StHTwe+D4MG9aD3Q7OnZCYoL8mJ1uQkw179ko8/UsEcHcm1NfNhHv8RPKoFgaH9PNjY9DaBnddEBcrOV4Ax/L11zc1CnLzJM0ti1yiaakz4Tq7JM5MSWHRTLhADQ5BYRE4MyWdXfrDhfo6QVrqIgLabNDwUg9X9UCSdRgGBmfna2AQsg4r12vV8FJgsy0SYE213i67J7lZOr87frNU8fOnOCEBtCeBI0PN3qtGiatsYRYsV5nizy9HhsCeFGLA0lt6+9r1hX1+BfoLjGcoYHQ0JNvV7FVWSUZGFxZwZFTx61eyXRAdHSLA1BS9/bDWmG1WoN/AuIYBOneq4+YWyfi4MYDj44r/YHENBdyyRR13dBjbDWj9a+MaChizWrMNG3dJtEvz0dTEzK1fRIRgakLTldikMRn8OaaOE+ONAfzbj/8XuDkD9vWpY4fDhEcWbe3aTkKwcmVos/iv2ZszYE+v3j5RYFwGAmFmAzdnwMlJ+OBRAxWeE6xdY6ISBbh8RW/fuG58FmebvXkBevqh47UacN9eQUlx6Eo1JP3gqTN6u/iC4Oplk5QowMQEHDikv7PnzgpePIf4OBMAAnT3QG6eHjJ9h6CtRVBZAXGxyxxQ6SiUY75AHcsXtLcKWprgUgnscoYecMH2op5+WLtBcue2crapVWKCIDFhfovFombQr+lpZeFJSZM8fSbN8R8MpuEfcPI0rIqR7D8ocZVL3r2XTE3J5VuiweTzKdu6nl4oKzdRBk3zHLQALUAL0AK0AC3AZa5w/e6/0LwZ9L/jbAZp30EPMxtcIOQvl2MHql1wzV4AAAAASUVORK5CYII="
+                            />
+                        </td>
+
+                        <td>
+                            <input
+                                name="moveRight"
+                                value="Right"
+                                title="Move camera right"
+                                onmousedown='startPtz2("ptzMoveRight")'
+                                onmouseup="stopPtz()"
+                                onmouseleave="stopPtz()"
+                                type="image"
+                                src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAAB3RJTUUH3wYZFREOI2GGYwAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAKTSURBVGje7doxT9tAFMDx/5mDbJmQUCQmGCLBEBjigQjJJMDAnKGV2k58gA60rF078SE6sKQb2UhwxJaBhYQs2GIiCyzJAE6kXCdEqdSqdhL7YvltPt2d9Lt359OzLBp2SxHjMLrdbmxx1WoVAyCOyGq1CoB8aeh2u7x7vxcL3Ncv31+3KDGPBJgAE2AC1AsohMAwZmddpJ/OqVSK5eVl0uk0juPQ7/dRSsUDKIQgk8lweHhIPp/n8vKSSqXC7e0tg8FAW6j0uz0zmQybm5usr6+Ty+WwbZvz83Mcx9ESOlcuf/r28lD5+eOfnZ+enri7u+Px8ZHRaEQ+n6dQKJDNZllcXKTf79Pr9RiNRpGiCoW9YBn0PI+rqyva7TYrKyuUSiV2dnYwTRPTNLEsS7uMSr8DlFI8Pz/T6XRwHIdaraY1VAYdqJTC8zztoXLcCXSHyklNpCtUTnpC3aByWiunC1RO+wxEDZVhvc2igoYGjAoaOjAo1HVdPM/zDY0M6AdaLBZpNpucnZ3R6XQYDoezA/wbtF6vs7+/z8HBAZZlUSwW2dra4vj4mJubm//OpNaluRDiteyZm2NjY4O1tbU37TOTQSEECwsLrK6usru7i2VZmKYJgG3bXF9f47oujUbDVzkmdYY1m00uLi6o1Wq4rstgMPBda0rdYTN3TYQFCx0YNiw0YFSwqQOjhk0NqAts4kDdYBMD6gobG6g7bCxgKpXSHhYYuLS0RLlcplQqaQ0LBDQMg+3tbY6Ojpifn9caFgiolKLVanF6esr9/T31el1bWGCg4zicnJzQ6/W0hgU+g8PhkIeHB+1hY1X0s4LT/pNFAkyACTABah9v7sGPHz7HN4Mv/zjHIX7/B92IG+5P5C/SIv4x5wpguQAAAABJRU5ErkJggg=="
+                            />
+                        </td>
+
+                    </tr>
+
+
+                    <tr>
+
+                        <td>
+                            <input
+                                name="moveDownLeft"
+                                value="DownLeft"
+                                title="Move camera down and left"
+                                onmousedown='startPtz2("ptzMoveBottomLeft")'
+                                onmouseup="stopPtz()"
+                                onmouseleave="stopPtz()"
+                                type="image"
+                                src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAAB3RJTUUH3wYaCzU2/ob+zwAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAKCSURBVGje7dqxa+JQHMDx74uFTjVUUOlkcdSCVHCpLgoHHR174P0Pt9xN+Qfu7+jSpaMguOQWpR10CeIgFlwEqYLRUc1N3nnCcdfk2b6+yxszBD75fZOQR8R32/HQeBnj8VhbXL1exwDQEVmv1wE42h4Yj8fcfPygBe7rl2+/EkXzFQJDYAgMge8TaBgGhvH21+/oECc9OTkhn88D0Ol0WCwW+kxQCEEul8OyLCzLIpfLIYTQK9F4PM7Z2RnHx8f63YOmaVIqlUilUjw+PuI4Dp7n6QEUQnBxcUGhUGA0GtFqtZjP53pNMB6PE4vFmM1mTCYTvRLdzfPh4eHN85QKVDFP6RNULU+pQBXzlAZUNU+pE1QxT2lAVfOUAlQ5T2kTVDVPKUCV8wwMVD1PKRNUOc/AQNXzDAR87TwjkQiRSOR192QOned20yqRSFAqlQCwbZvn5+fDA3fzbDQa0vLcokzTJJvNkkwmub6+plKpsFqtsCyL+/t7NpvN4YCy89xHJRIJisUihUKBWCzG+fk5y+US13VfL9Ggef4NlUqlGI1GzGYzms0m/X6f6XSKbdv/PD3fQL95vgTVaDRotVpMJhMcx/k5vZfgfAFfmmcQ1Pa8Qe7to0Pk+daoQMA/5akSyjdwP892u81iseD09FQpVKAJbvN0XZdkMkm1WuXq6koplG+gaZqUy2XS6TS9Xo9arUY0GlUO5QsohCCdTnN5ecl6vSaTyfD09KQkyhfQ8zwGgwF3d3cAdLtdbNtWEuU7Udd1ub29pd1uMxwOlUUFesi4rku321UaFfh78L3gpO2qhcAQGAJD4H8L/O09+Kn2Wd8Jbv9x1mHt/oNu6IbbR/4Ama4hfb8o4ZQAAAAASUVORK5CYII="
+                            />
+                        </td>
+
+                        <td>
+                            <input
+                                name="moveDown"
+                                value="Down"
+                                title="Move camera down"
+                                onmousedown='startPtz2("ptzMoveDown")'
+                                onmouseup="stopPtz()"
+                                onmouseleave="stopPtz()"
+                                type="image"
+                                src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAAB3RJTUUH3wYZFREjZr7aFgAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAKtSURBVGje7dqxTxpRHMDx77t43GbciImTkJgYN/VmFMpA4mIc2qR1de3SMjI3/CuOsqkcOpjcSiMLdyOMJjpxJrxOWGIa48H7vbaXeyOwfPm897h3nOoFPzUZHs54PM5sXKfTwQHIYmSn0wFgZfbCeDzm46cPmYj7/u3H7ylKxkcemAfmgXngvxWolEIp9d8ErqT5sOd5rK+vo5RiNBoxmUzsSTgOWmu01jKCSik2NjY4Ozuj1Wqxs7NjTbJYLHJ8fMzW1hau68oFrq6usr+/z9HREY1GA8/zxOM8z+Pk5IR2u83p6Slra2upvth3B06nU6Io4vb2liRJ2N3dZXNzU1RRKUWpVKJareK6LqPRiMfHx1TTNNUm8/T0xPn5OXd3d+zt7VGtVikUCmKBhUKBWq2G7/uEYcj19TVJksjtolprhsMhQRAAcHBwQKlUElGc6VUqFQC63S5RFMltMrORJAmXl5eEYYjv+2KKr/Wurq5S6y0UqLUmiiJRRVN6C1/JSCua0ls4UFLRpN5S16JSiib1lgqUUDStt/RpwrSiab2lA00qSugZOQ+aUpTQMxJoQlFKz9iJfllFKT1jgcsoSuoZvSezqKKkntHARRSl9YzfVUurKK1nPDCNog0944FpFG3oiQS+R9GWnkjgexRt6YkFvqVoU08s8C1Fm3qigX9SLJfLlMtla3qQ8r+JRRUrlQq+71Ov11FKWdMTD5xX9H2fRqPx8p4NPfHAecXDw8OXqRkEgRU90TU4rxjHMWEY4jgOruvS7/eJ41hcz0ogwGQy4eLigpubGx4eHojj2IqelSk6UxwMBjSbTba3t+n1ekyn0+wEAjw/P3N/f89gMLAWZzVwJmlj3Vlfg39z5IF5YB6YB9r7mfjy+Wt2BWfPOGdhzD+D7mQt7nXkL/kUZr8cN2RTAAAAAElFTkSuQmCC"
+                            />
+                        </td>
+
+                        <td>
+                            <input
+                                name="moveDownRight"
+                                value="DownRight"
+                                title="Move camera down and right"
+                                onmousedown='startPtz2("ptzMoveBottomRight")'
+                                onmouseup="stopPtz()"
+                                onmouseleave="stopPtz()"
+                                type="image"
+                                src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAAB3RJTUUH3wYaCzYe4B4F9gAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAMkSURBVGje7Zq/SxtxGIefu0QcEhXv/DGKp4NDIORUxJghUUTcHSq0HXXt0g6SoYNL/44uDq1bwClpwQvkBB2i4JDJDMFTQnK3RMFcp7RWKObsXXM98m530z18nvf784Tv385tAlxirVYLLFwul0MECCJkLpcDINx5UavVeLW9Hgi4D+8//VKUgFcfsA/YB+wDBhtQFEVE0bvPCPcSbmhoCFVVATg9PcWyrOAkKAgC8XicbDZLNpslHo8jCEKwEgQYHBxEkiTGx8eD1YO2bXN+fo6u60xNTZFKpRgZGQnWINNsNikWi1xdXbG4uEgsFnNd056PooZhUK/XPdO0p4AdTUulkmea9jxBrzX1xUrGS017Dui1pr5I0EtNfbPY9kpTXwB6qalvEvRKU1/tB73Q1DeAXmnqqwS90NR3RxZua+orQC80dQwYCoUIhUL/jaaOdvRjY2Ok02kAjo+PMQwDgHa77VtNuwYURZFMJsP+/j7hcJh8Ps/R0RHX19dcXFzQbDZdgX2s6e7uLqlUikKhQKPR+DdnMoIgEIlE2N7eZnl5mXq9zsnJCZqmYRiGK7AdTTc3N39qqmkatm17B9hutykUCuzt7SHLMnNzcywsLCDLMjs7O2xsbLgK65amjhK8vb3l8PAQgOHhYWKxGBMTEySTSZaWllyDdVPT0NbW24+dhy9fP3fVI7Zt02q1qFarXF5eous65XIZXdcxDANZlpFlmdXVVVRVJZlMMjs7SyQSQZIkLMvi/v4eQRD+qN3d3R3RaJT5+XlGR0cpl8tUq9WuoFZW1l/eg09hARqNBpqmAZDP511L1g1NHSf4XLmZrGmazMzMsLa2xs3NDaVSiVar5ShB1wHdhLUsi2g0iqqqjjR1TVGvNS4Wi0xOTmKa5os1/ad3Ey+BNU2TgYEBFEUhk8k4Hk17dvnSLawkSUxPT/Pw8EAikUBRFM7Ozrqe9Ht+u9QNbDqdJpFIcHBwQKVScbSi8QVgN7CKolCpVDBN0789+DewTrT09Y7+OdjAAgbmTKYP2AfsAwarfpsH37x+F9wEO/84B6Ee/4MuBg3uKeQPaDR2V8/iil4AAAAASUVORK5CYII="
+                            />
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
         </div>
-        <div id="audioPlayer" style="background-color: black; border-radius: 12px; padding-left: 6px;">
-        <h3 style="color: white;">Audio Controls</h3>
-        <figcaption style="color: white;">Suspense:</figcaption>
-        <audio id="suspenseAudio" controls loop>
-            <source src="suspense.mp3" type="audio/mpeg">
-        </audio>
-        <h3> </h3>
-        <figcaption style="color: white;">Mission Impossible Theme:</figcaption>
-        <audio id="themeAudio" controls>
-            <source src="theme.mp3" type="audio/mpeg">
-        </audio>
-        <h3> </h3>
-        <figcaption style="color: white;">Alarm:</figcaption>
-        <audio controls loop>
-            <source src="alarm.mp3" type="audio/mpeg">
-        </audio>
-        <h3> </h3>
-        <button onclick="sendCmd('skip');">Skip Login</button>
-        <button onclick="sendCmd('back');">Return To Login</button>
-        <h3> </h3>
-        <img src="qr.png"></img>
-    </div>
+
+
+        <!-- AUDIO -->
+
+        <div id="audioPlayer"></div>
+
     </div>
 
-</body>
+</div>
+
+
+<!-- =======================================================
+     TIMER JAVASCRIPT
+     ======================================================= -->
 
 <script>
-let timerDuration = 60 * 60; // 60 minutes in seconds
+
+let timerDuration = 60 * 60;
 let timerRemaining = timerDuration;
 let timerInterval = null;
 let timerSpeed = 1;
 let lastTimestamp = null;
 
-const timerDisplay = document.getElementById('timerDisplay');
-const startButton = document.getElementById('startButton');
-const pauseButton = document.getElementById('pauseButton');
-const resetButton = document.getElementById('resetButton');
-const speedSelect = document.getElementById('speedSelect');
+const timerDisplay =
+    document.getElementById('timerDisplay');
+
+const startButton =
+    document.getElementById('startButton');
+
+const pauseButton =
+    document.getElementById('pauseButton');
+
+const resetButton =
+    document.getElementById('resetButton');
+
+const speedSelect =
+    document.getElementById('speedSelect');
+
 let timerWindow = null;
 
-document.getElementById("openTimerWindow").addEventListener("click", () => {
+
+/* =========================================================
+   OPEN TIMER WINDOW
+   ========================================================= */
+
+document
+.getElementById("openTimerWindow")
+.addEventListener("click", () => {
+
     if (!timerWindow || timerWindow.closed) {
-        timerWindow = window.open("", "TimerWindow", "width=800,height=400");
+
+        timerWindow =
+            window.open(
+                "",
+                "TimerWindow",
+                "width=800,height=400"
+            );
+
         const doc = timerWindow.document;
+
         doc.title = "Timer";
 
-        // Add styles
+
+        /* Styles */
+
         const style = doc.createElement("style");
+
         style.textContent = `
-            html, body { margin:0; padding:0; height:100%; width:100%; overflow:hidden; font-family: Arial, sans-serif; }
+
+            html, body {
+                margin:0;
+                padding:0;
+                height:100%;
+                width:100%;
+                overflow:hidden;
+                font-family:Arial,sans-serif;
+            }
+
             @font-face {
-              font-family: heistfont;
-              src: url(heistfont.ttf);
+                font-family:heistfont;
+                src:url(heistfont.ttf);
             }
-            
+
             #overlay {
-                background-color: red;
-                color: white;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                height: 100%;
-                width: 100%;
-                font-size: 1.5em;
-                cursor: pointer;
-                user-select: none;
+                background-color:red;
+                color:white;
+                display:flex;
+                justify-content:center;
+                align-items:center;
+                height:100%;
+                width:100%;
+                font-size:1.5em;
+                cursor:pointer;
+                user-select:none;
             }
+
             #timerScreen {
-                display: none;
-                background-color: #111;
-                color: white;
-                height: 100%;
-                width: 100%;
-                display: none;
-                justify-content: center;
-                align-items: center;
-                font-family: 'heistfont', monospace;
-                font-size: 30em;
-                font-weight: bold;
+                display:none;
+                background-color:#111;
+                color:white;
+                height:100%;
+                width:100%;
+                justify-content:center;
+                align-items:center;
+                font-family:'heistfont',monospace;
+                font-size:30em;
+                font-weight:bold;
             }
+
             .timerChar {
-                position: absolute;
-                top: 50%;
-                left: 50%; /* will be overridden individually */
-                transform: translate(-50%, -50%);
-                text-align: center;
-                width: 1ch;
+                position:absolute;
+                top:50%;
+                transform:translate(-50%,-50%);
+                text-align:center;
+                width:1ch;
             }
-            #digit1 { left: 10%; }
-            #digit2 { left: 30%; }
-            #colon  { left: 50%; }
-            #digit3 { left: 70%; }
-            #digit4 { left: 90%; }
-            `;
+
+            #digit1 {
+                left:10%;
+            }
+
+            #digit2 {
+                left:30%;
+            }
+
+            #colon {
+                left:50%;
+            }
+
+            #digit3 {
+                left:70%;
+            }
+
+            #digit4 {
+                left:90%;
+            }
+
+        `;
+
         doc.head.appendChild(style);
 
-        // Overlay
-        const overlay = doc.createElement("div");
+
+        /* Overlay */
+
+        const overlay =
+            doc.createElement("div");
+
         overlay.id = "overlay";
-        overlay.textContent = "Double click to fullscreen";
+
+        overlay.textContent =
+            "Double click to fullscreen";
+
         doc.body.appendChild(overlay);
 
-        // Timer screen with 5 elements (2 digits : 2 digits)
-        const timerScreen = doc.createElement("div");
+
+        /* Timer */
+
+        const timerScreen =
+            doc.createElement("div");
+
         timerScreen.id = "timerScreen";
 
-        const digit1 = doc.createElement("span");
+
+        const digit1 =
+            doc.createElement("span");
+
         digit1.className = "timerChar";
         digit1.id = "digit1";
 
-        const digit2 = doc.createElement("span");
+
+        const digit2 =
+            doc.createElement("span");
+
         digit2.className = "timerChar";
         digit2.id = "digit2";
 
-        const colon = doc.createElement("span");
+
+        const colon =
+            doc.createElement("span");
+
         colon.className = "timerChar";
         colon.id = "colon";
         colon.textContent = ":";
 
-        const digit3 = doc.createElement("span");
+
+        const digit3 =
+            doc.createElement("span");
+
         digit3.className = "timerChar";
         digit3.id = "digit3";
 
-        const digit4 = doc.createElement("span");
+
+        const digit4 =
+            doc.createElement("span");
+
         digit4.className = "timerChar";
         digit4.id = "digit4";
 
-        // Append in order
+
         timerScreen.appendChild(digit1);
         timerScreen.appendChild(digit2);
         timerScreen.appendChild(colon);
@@ -448,129 +1266,267 @@ document.getElementById("openTimerWindow").addEventListener("click", () => {
 
         doc.body.appendChild(timerScreen);
 
-        // Fullscreen toggle
-        overlay.addEventListener("dblclick", () => {
-            if (doc.body.requestFullscreen) {
-                doc.body.requestFullscreen();
-            } else if (doc.body.webkitRequestFullscreen) {
-                doc.body.webkitRequestFullscreen();
-            } else if (doc.body.msRequestFullscreen) {
-                doc.body.msRequestFullscreen();
-            }
-            overlay.style.display = "none";
-            timerScreen.style.display = "flex";
-        });
 
-        // Update timer display in popup
+        /* Fullscreen */
+
+        overlay.addEventListener(
+            "dblclick",
+            () => {
+
+                if (doc.body.requestFullscreen) {
+
+                    doc.body.requestFullscreen();
+
+                } else if (doc.body.webkitRequestFullscreen) {
+
+                    doc.body.webkitRequestFullscreen();
+
+                } else if (doc.body.msRequestFullscreen) {
+
+                    doc.body.msRequestFullscreen();
+
+                }
+
+                overlay.style.display = "none";
+                timerScreen.style.display = "flex";
+
+            }
+        );
+
+
+        /* Timer updates */
+
         function updatePopupTimerDisplay(timeStr) {
+
             digit1.textContent = timeStr[0];
             digit2.textContent = timeStr[1];
-            colon.textContent  = ":";
+
+            colon.textContent = ":";
+
             digit3.textContent = timeStr[3];
             digit4.textContent = timeStr[4];
+
         }
 
-        // Listen for timer updates from parent
-        timerWindow.addEventListener("message", (event) => {
-            if (event.data.timer !== undefined) {
-                updatePopupTimerDisplay(event.data.timer);
+
+        timerWindow.addEventListener(
+            "message",
+            (event) => {
+
+                if (event.data.timer !== undefined) {
+
+                    updatePopupTimerDisplay(
+                        event.data.timer
+                    );
+
+                }
+
             }
-        });
+        );
 
-        // Initial timer update
+
         sendTimerUpdate();
+
     } else {
+
         timerWindow.focus();
+
     }
+
 });
 
-document.getElementById("closeTimerWindow").addEventListener("click", function() {
-    if (timerWindow && !timerWindow.closed) {
-        timerWindow.close();
-    }
-});
 
-// Send timer value from parent to child
+/* =========================================================
+   CLOSE TIMER WINDOW
+   ========================================================= */
+
+document
+.getElementById("closeTimerWindow")
+.addEventListener(
+    "click",
+    function() {
+
+        if (
+            timerWindow &&
+            !timerWindow.closed
+        ) {
+
+            timerWindow.close();
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   SEND TIMER TO POPUP
+   ========================================================= */
+
 function sendTimerUpdate() {
-    if (timerWindow && !timerWindow.closed) {
-        const displayValue = document.getElementById("timerDisplay").textContent;
-        timerWindow.postMessage({ timer: displayValue }, "*");
+
+    if (
+        timerWindow &&
+        !timerWindow.closed
+    ) {
+
+        const displayValue =
+            document
+            .getElementById("timerDisplay")
+            .textContent;
+
+        timerWindow.postMessage(
+            {
+                timer: displayValue
+            },
+            "*"
+        );
+
     }
+
 }
+
+
+/* =========================================================
+   UPDATE TIMER
+   ========================================================= */
 
 function updateTimerDisplay() {
-  const minutes = Math.floor(timerRemaining / 60);
-  const seconds = Math.floor(timerRemaining % 60);
-  timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds
-    .toString()
-    .padStart(2, '0')}`;
-  sendTimerUpdate();
+
+    const minutes =
+        Math.floor(timerRemaining / 60);
+
+    const seconds =
+        Math.floor(timerRemaining % 60);
+
+    timerDisplay.textContent =
+        `${minutes
+            .toString()
+            .padStart(2, '0')
+        }:${
+            seconds
+            .toString()
+            .padStart(2, '0')
+        }`;
+
+    sendTimerUpdate();
+
 }
+
+
+/* =========================================================
+   TIMER LOOP
+   ========================================================= */
 
 function tick(currentTime) {
-  if (!lastTimestamp) lastTimestamp = currentTime;
-  const delta = (currentTime - lastTimestamp) / 1000;
-  lastTimestamp = currentTime;
 
-  timerRemaining -= delta * timerSpeed;
-  if (timerRemaining <= 0) {
-    timerRemaining = 0;
-    cancelAnimationFrame(timerInterval);
-    timerInterval = null;
-  }
-  updateTimerDisplay();
-  if (timerInterval) timerInterval = requestAnimationFrame(tick);
-}
-
-function startTimer() {
-  if (timerInterval) return;
-  lastTimestamp = null;
-  timerInterval = requestAnimationFrame(tick);
-}
-
-function pauseTimer() {
-  cancelAnimationFrame(timerInterval);
-  timerInterval = null;
-  lastTimestamp = null;
-}
-
-function resetTimer() {
-  pauseTimer();
-  timerRemaining = timerDuration;
-  updateTimerDisplay();
-}
-
-speedSelect.addEventListener('change', (e) => {
-  timerSpeed = parseFloat(e.target.value);
-});
-
-startButton.addEventListener('click', startTimer);
-pauseButton.addEventListener('click', pauseTimer);
-resetButton.addEventListener('click', resetTimer);
-
-updateTimerDisplay();
-</script>
-
-
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-    const suspenseAudio = document.getElementById("suspenseAudio");
-    const themeAudio = document.getElementById("themeAudio");
-
-    console.log("suspenseAudio:", suspenseAudio);
-    console.log("themeAudio:", themeAudio);
-
-    if (!suspenseAudio || !themeAudio) {
-        console.error("Audio elements not found in DOM!");
-        return;
+    if (!lastTimestamp) {
+        lastTimestamp = currentTime;
     }
 
-    themeAudio.addEventListener('play', () => {
-        suspenseAudio.pause();
-        suspenseAudio.currentTime = 0;
-    });
-});
+    const delta =
+        (currentTime - lastTimestamp) / 1000;
+
+    lastTimestamp = currentTime;
+
+    timerRemaining -=
+        delta * timerSpeed;
+
+
+    if (timerRemaining <= 0) {
+
+        timerRemaining = 0;
+
+        cancelAnimationFrame(timerInterval);
+
+        timerInterval = null;
+
+    }
+
+
+    updateTimerDisplay();
+
+
+    if (timerInterval) {
+
+        timerInterval =
+            requestAnimationFrame(tick);
+
+    }
+
+}
+
+
+/* =========================================================
+   TIMER CONTROLS
+   ========================================================= */
+
+function startTimer() {
+
+    if (timerInterval) return;
+
+    lastTimestamp = null;
+
+    timerInterval =
+        requestAnimationFrame(tick);
+
+}
+
+
+function pauseTimer() {
+
+    cancelAnimationFrame(timerInterval);
+
+    timerInterval = null;
+
+    lastTimestamp = null;
+
+}
+
+
+function resetTimer() {
+
+    pauseTimer();
+
+    timerRemaining = timerDuration;
+
+    updateTimerDisplay();
+
+}
+
+
+speedSelect.addEventListener(
+    'change',
+    (e) => {
+
+        timerSpeed =
+            parseFloat(e.target.value);
+
+    }
+);
+
+
+startButton.addEventListener(
+    'click',
+    startTimer
+);
+
+
+pauseButton.addEventListener(
+    'click',
+    pauseTimer
+);
+
+
+resetButton.addEventListener(
+    'click',
+    resetTimer
+);
+
+
+updateTimerDisplay();
+
 </script>
 
-
+</body>
 </html>
