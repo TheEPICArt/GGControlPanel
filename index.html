@@ -207,6 +207,172 @@ body {
    AUDIO PANEL
    ========================================================= */
 
+/* =========================================================
+   REPORT POPUP
+   ========================================================= */
+
+#reportOverlay {
+
+    display: none;
+
+    position: fixed;
+
+    top: 0;
+    left: 0;
+
+    width: 100vw;
+    height: 100vh;
+
+    background: rgba(0, 0, 0, 0.92);
+
+    z-index: 99999;
+
+    align-items: center;
+    justify-content: center;
+
+}
+
+
+#reportPopup {
+
+    width: 600px;
+    max-width: 90vw;
+
+    padding: 40px;
+
+    background: #181818;
+
+    border: 3px solid #60A080;
+
+    border-radius: 12px;
+
+    color: white;
+
+    text-align: center;
+
+    box-shadow:
+        0 0 40px rgba(0, 0, 0, 0.8);
+
+}
+
+
+#reportPopup h1 {
+
+    margin-top: 0;
+    margin-bottom: 30px;
+
+}
+
+
+.reportNameRow {
+
+    display: flex;
+
+    gap: 15px;
+
+    margin-bottom: 30px;
+
+}
+
+
+.reportNameRow input {
+
+    flex: 1;
+
+    padding: 12px;
+
+    font-size: 18px;
+
+    border: 2px solid #555;
+
+    border-radius: 6px;
+
+    background: #222;
+
+    color: white;
+
+}
+
+
+.reportOptions {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 12px;
+
+    text-align: left;
+
+    margin-bottom: 30px;
+
+}
+
+
+.reportOptions label {
+
+    padding: 15px;
+
+    border: 2px solid #444;
+
+    border-radius: 6px;
+
+    background: #222;
+
+    cursor: pointer;
+
+    font-weight: bold;
+
+}
+
+
+.reportOptions label:hover {
+
+    background: #333;
+
+    border-color: #60A080;
+
+}
+
+
+.reportOptions input {
+
+    margin-right: 10px;
+
+}
+
+
+#finalSubmitReport {
+
+    width: 100%;
+
+    padding: 15px;
+
+    border: 2px solid #777;
+
+    border-radius: 6px;
+
+    background: #60A080;
+
+    color: white;
+
+    font-size: 18px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+}
+
+
+#finalSubmitReport:hover {
+
+    background: white;
+
+    color: #60A080;
+
+}
+  
 #audioPanel {
   right: 20px;
   top: 30px;
@@ -1054,6 +1220,85 @@ function isPuzzleAvailable(puzzle) {
    COMPLETE PUZZLE
    ========================================================= */
 
+/* =========================================================
+   CHECK IF ROOM IS COMPLETE
+   ========================================================= */
+
+function isRoomComplete() {
+
+    if (!currentRoom) {
+        return false;
+    }
+
+    const room =
+        rooms[currentRoom];
+
+    return !room.puzzles.some(
+        puzzle => {
+
+            /*
+             * Already completed puzzles
+             * don't count.
+             */
+
+            if (
+                completedPuzzles.includes(
+                    puzzle.name
+                )
+            ) {
+                return false;
+            }
+
+            /*
+             * If this puzzle is available,
+             * the room isn't finished yet.
+             */
+
+            return isPuzzleAvailable(
+                puzzle
+            );
+
+        }
+    );
+
+}
+
+/* =========================================================
+   FINISH ROOM
+   ========================================================= */
+
+function finishRoom() {
+
+    /*
+     * Stop the timer.
+     */
+
+    pauseTimer();
+
+
+    /*
+     * Show the report button.
+     */
+
+    const reportButton =
+        document.getElementById(
+            "submitReportButton"
+        );
+
+    if (reportButton) {
+
+        reportButton.style.display =
+            "block";
+
+    }
+
+
+    console.log(
+        "ROOM COMPLETE"
+    );
+
+}
+  
 function completePuzzle(puzzleName) {
 
     if (!currentRoom) return;
@@ -1157,8 +1402,236 @@ function completePuzzle(puzzleName) {
      */
 
     renderPuzzles();
+    
+    if (isRoomComplete()) {
+    
+        finishRoom();
+    
+    }
 
 }
+
+/* =========================================================
+   REPORT POPUP
+   ========================================================= */
+
+const submitReportButton =
+    document.getElementById(
+        "submitReportButton"
+    );
+
+const reportOverlay =
+    document.getElementById(
+        "reportOverlay"
+    );
+
+
+submitReportButton.addEventListener(
+    "click",
+    () => {
+
+        reportOverlay.style.display =
+            "flex";
+
+    }
+);
+
+/* =========================================================
+   SUBMIT REPORT
+   ========================================================= */
+
+document
+    .getElementById(
+        "finalSubmitReport"
+    )
+    .addEventListener(
+        "click",
+        async () => {
+
+            const firstName =
+                document
+                    .getElementById(
+                        "reportFirstName"
+                    )
+                    .value
+                    .trim();
+
+
+            const lastName =
+                document
+                    .getElementById(
+                        "reportLastName"
+                    )
+                    .value
+                    .trim();
+
+
+            const result =
+                document.querySelector(
+                    'input[name="escapeResult"]:checked'
+                );
+
+
+            if (!firstName || !lastName) {
+
+                alert(
+                    "Please enter your first and last name."
+                );
+
+                return;
+
+            }
+
+
+            if (!result) {
+
+                alert(
+                    "Please select how the group did."
+                );
+
+                return;
+
+            }
+
+
+            /*
+             * Total time spent in the room.
+             *
+             * timerDuration is the original
+             * room length.
+             */
+
+            const totalTime =
+                timerDuration -
+                timerRemaining;
+
+
+            /*
+             * Build puzzle timestamp data.
+             */
+
+            const puzzleTimes =
+                Object.entries(
+                    puzzleCompletionTimes
+                ).map(
+                    ([puzzle, timeRemaining]) => ({
+
+                        puzzle: puzzle,
+
+                        timeRemaining:
+                            timeRemaining,
+
+                        timeElapsed:
+                            timerDuration -
+                            timeRemaining
+
+                    })
+                );
+
+
+            const report = {
+
+                firstName:
+                    firstName,
+
+                lastName:
+                    lastName,
+
+                runner:
+                    firstName +
+                    " " +
+                    lastName,
+
+                room:
+                    rooms[currentRoom].name,
+
+                totalTime:
+                    totalTime,
+
+                totalTimeFormatted:
+                    formatPuzzleTime(
+                        totalTime
+                    ),
+
+                result:
+                    result.value,
+
+                puzzleTimes:
+                    puzzleTimes
+
+            };
+
+
+            console.log(
+                "Submitting report:",
+                report
+            );
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "YOUR_GOOGLE_APPS_SCRIPT_URL",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "text/plain"
+                            },
+
+                            body:
+                                JSON.stringify(
+                                    report
+                                )
+
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!data.success) {
+
+                    throw new Error(
+                        data.error ||
+                        "Unknown error"
+                    );
+
+                }
+
+
+                alert(
+                    "Report submitted successfully!"
+                );
+
+
+                reportOverlay.style.display =
+                    "none";
+
+
+                submitReportButton.style.display =
+                    "none";
+
+
+            } catch (error) {
+
+                console.error(
+                    "Report submission failed:",
+                    error
+                );
+
+                alert(
+                    "There was a problem submitting the report."
+                );
+
+            }
+
+        }
+    );
 
 /* =========================================================
    UNDO PUZZLE
@@ -2434,6 +2907,13 @@ window.addEventListener(
 
             </div>
 
+            <button
+                id="submitReportButton"
+                style="display:none;"
+            >
+                SUBMIT REPORT
+            </button>
+
 
             <label for="speedSelect">
                 Speed:
@@ -2649,6 +3129,85 @@ window.addEventListener(
     </div>
 
 </div>
+
+</div>
+
+<!-- =========================================================
+     SUBMIT REPORT POPUP
+     ========================================================= -->
+
+<div id="reportOverlay">
+
+    <div id="reportPopup">
+
+        <h1>SUBMIT ROOM REPORT</h1>
+
+        <div class="reportNameRow">
+
+            <input
+                id="reportFirstName"
+                type="text"
+                placeholder="First Name"
+            >
+
+            <input
+                id="reportLastName"
+                type="text"
+                placeholder="Last Name"
+            >
+
+        </div>
+
+
+        <div class="reportOptions">
+
+            <label>
+                <input
+                    type="radio"
+                    name="escapeResult"
+                    value="This group got out with no help"
+                >
+                This group got out with no help
+            </label>
+
+
+            <label>
+                <input
+                    type="radio"
+                    name="escapeResult"
+                    value="This group got out with help"
+                >
+                This group got out with help
+            </label>
+
+
+            <label>
+                <input
+                    type="radio"
+                    name="escapeResult"
+                    value="This group wouldn't have gotten out without my help"
+                >
+                This group wouldn't have gotten out without my help
+            </label>
+
+
+            <label>
+                <input
+                    type="radio"
+                    name="escapeResult"
+                    value="This group didn't get out"
+                >
+                This group didn't get out
+            </label>
+
+        </div>
+
+
+        <button id="finalSubmitReport">
+            SUBMIT REPORT
+        </button>
+
+    </div>
 
 </div>
 
