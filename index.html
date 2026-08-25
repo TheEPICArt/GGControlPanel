@@ -623,7 +623,7 @@ function getRoomAdjustedCommand(command) {
      * only when Heist is selected.
      */
 
-    if (currentRoom !== "heist") {
+    if (currentRoom == "heist") {
         return command;
     }
 
