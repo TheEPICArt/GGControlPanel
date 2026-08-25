@@ -67,15 +67,6 @@ body {
   display: none;
 }
 
-#roomTitle {
-  text-align: center;
-  font-size: 28px;
-  margin-top: 5px;
-  margin-bottom: 5px;
-  color: white;
-  font-weight: bold;
-}
-
 div#containerControls {
     display: flex;
     justify-content: space-between;
@@ -374,10 +365,6 @@ function selectRoom(roomKey) {
 
     document.getElementById("roomSelection").style.display = "none";
     document.getElementById("controller").style.display = "block";
-
-    document.getElementById("roomTitle").textContent =
-        room.name + " Controller";
-
     loadAudio(room);
 
     startViewer();
@@ -653,10 +640,6 @@ function initPage() {
      ======================================================= -->
 
 <div id="controller">
-
-    <div id="roomTitle"></div>
-
-
     <!-- TIMER -->
 
     <div id="containerControls">
