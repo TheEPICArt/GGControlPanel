@@ -630,7 +630,64 @@ const rooms = {
         ip2: "10.0.1.156",
 
         background: "metal.jpg",
-
+        puzzles: [
+              {
+                  name: "Coolant Lock",
+                  requires: []
+              },
+              {
+                  name: "Water Bottle",
+                  requires: []
+              },
+              {
+                  name: "Fire Box",
+                  requires: ["Water Bottle"]
+              },
+              {
+                  name: "Coin Capsule",
+                  requires: []
+              },
+              {
+                  name: "Coin Lock",
+                  requires: ["Coin Capsule"]
+              },
+              {
+                  name: "Wire Lock",
+                  requires: ["Fire Box"]
+              },
+              {
+                  name: "Boron Lock",
+                  requires: ["Coolant Lock"]
+              },
+              {
+                  name: "Spare Key",
+                  requires: []
+              },
+              {
+                  name: "Entered Reactor Chamber",
+                  requires: ["Spare Key", "Boron Lock", "Wire Lock", "Coin Lock"]
+              },
+              {
+                  name: "Take Bolts Off",
+                  requires: ["Entered Reactor Chamber"]
+              },
+              {
+                  name: "Spills Cryptx",
+                  requires: ["Take Bolts Off"]
+              },
+              {
+                  name: "Fingerprint Safe",
+                  requires: ["Spills Cryptx"]
+              },
+              {
+                  name: "Safe On Desk",
+                  requires: ["Fingerprint Safe"]
+              },
+              {
+                  name: "Exit Door",
+                  requires: ["Safe On Desk"]
+              }
+        ],
         sounds: [
             {
                 name: "Coolant Shutdown Switch",
@@ -658,7 +715,72 @@ const rooms = {
         ip2: "10.0.1.24",
 
         background: "back.png",
-
+        puzzles: [
+              {
+                  name: "Right Sarcophagus",
+                  requires: []
+              },
+              {
+                  name: "Unlock Dowels",
+                  requires: ["Right Sarcophagus"]
+              },
+              {
+                  name: "Open Altar",
+                  requires: ["Unlock Dowels"]
+              },
+              {
+                  name: "Finish The Translated Alphabet",
+                  requires: ["Open Altar"]
+              },
+              {
+                  name: "Translate Leather",
+                  requires: ["Finish The Translated Alphabet"]
+              },
+              {
+                  name: "Translate Corner",
+                  requires: ["Finish The Translated Alphabet"]
+              },
+              {
+                  name: "Place Pharaoh",
+                  requires: ["Translate Leather"]
+              },
+              {
+                  name: "Open Secret Door",
+                  requires: ["Place Pharaoh"]
+              },
+              {
+                  name: "Place Lioness",
+                  requires: ["Open Secret Door", "Translate Corner"]
+              },
+              {
+                  name: "Open Locked Box",
+                  requires: ["Open Secret Door"]
+              },
+              {
+                  name: "Shine Blacklight At Anubis Idol",
+                  requires: ["Open Secret Door"]
+              },
+              {
+                  name: "Place Anubis",
+                  requires: ["Shine Blacklight At Anubis Idol"]
+              },
+              {
+                  name: "Complete Map Puzzle",
+                  requires: ["Open Secret Door"]
+              },
+              {
+                  name: "Complete Directions Puzzle",
+                  requires: ["Open Secret Door"]
+              },
+              {
+                  name: "Place Falcon",
+                  requires: ["Complete Map Puzzle"]
+              },
+              {
+                  name: "Place Horus",
+                  requires: ["Place Anubis", "Complete Directions Puzzle"]
+              }
+        ],
         sounds: [
             {
                 name: "Thunder Sounds",
