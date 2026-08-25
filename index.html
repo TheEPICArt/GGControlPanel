@@ -238,6 +238,8 @@ const rooms = {
         ip1: "10.0.1.65",
         ip2: "10.0.1.64",
 
+        background: "lasers.jpg"
+
         sounds: [
             {
                 name: "Suspense",
@@ -263,6 +265,8 @@ const rooms = {
         ip1: "10.0.1.157",
         ip2: "10.0.1.156",
 
+        background: "metal.jpg"
+
         sounds: [
             {
                 name: "Coolant Shutdown Switch",
@@ -287,6 +291,8 @@ const rooms = {
 
         ip1: "10.0.1.9",
         ip2: "10.0.1.24",
+
+        background: "back.png"
 
         sounds: [
             {
@@ -365,6 +371,7 @@ function selectRoom(roomKey) {
 
     document.getElementById("roomSelection").style.display = "none";
     document.getElementById("controller").style.display = "block";
+    document.body.style.backgroundImage = `url("${room.background}")`;
     loadAudio(room);
 
     startViewer();
