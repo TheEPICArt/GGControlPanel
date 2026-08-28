@@ -1138,6 +1138,12 @@ function checkRoomCompletion() {
     if (allCompleted) {
         pauseTimer();
 
+        // Format the current timerRemaining into MM:SS (using your existing time formatting function)
+        const formattedTime = formatPuzzleTime(timerRemaining);
+        
+        // Populate the input field so it's ready and editable
+        document.getElementById("finishedTimeInput").value = formattedTime;
+
         // Show the draggable submit panel
         document.getElementById("submitPanel").style.display = "block";
     }
@@ -1145,13 +1151,15 @@ function checkRoomCompletion() {
 
 function submitRoomData() {
     const submitName = document.getElementById("submitNameInput").value;
+    const finishedTimeString = document.getElementById("finishedTimeInput").value;
     const selectedOption = document.querySelector('input[name="completionStatus"]:checked').value;
 
     console.log("Your Name:", submitName);
+    console.log("Finished Time (Edited/Final):", finishedTimeString);
     console.log("Status:", selectedOption);
-    console.log("Completion Times:", puzzleCompletionTimes);
+    console.log("All Puzzle Completion Times:", puzzleCompletionTimes);
 
-    alert("Data recorded locally!");
+    alert("Data recorded locally with final time: " + finishedTimeString);
     
     // Hide the panel after submitting
     document.getElementById("submitPanel").style.display = "none";
@@ -2769,12 +2777,18 @@ window.addEventListener(
             SUBMIT ROOM
         </div>
 
-
         <div id="submitContainer">
 
             <div class="inputGroup">
                 <label for="submitNameInput">Your Name:</label>
                 <input type="text" id="submitNameInput" placeholder="Enter your name...">
+            </div>
+
+            <!-- NEW: Finished Time Field -->
+            <div class="inputGroup">
+                <label for="finishedTimeInput">Finished Time Remaining:</label>
+                <input type="text" id="finishedTimeInput" placeholder="MM:SS">
+                <small style="color: #aaa; font-size: 11px;">Click to edit if needed</small>
             </div>
 
             <div class="radioGroup">
