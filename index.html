@@ -672,72 +672,72 @@ const rooms = {
               {
                   name: "Dice Lock",
                   requires: [],
-                  column: "D"
+                  column: "E"
               },
               {
                   name: "Macy Lock",
                   requires: [],
-                  column: "E"
+                  column: "F"
               },
               {
                   name: "Directional Lock",
                   requires: [],
-                  column: "F"
+                  column: "G"
               },
               {
                   name: "Glasses Book",
                   requires: [],
-                  column: "G"
+                  column: "H"
               },
               {
                   name: "Computer Login",
                   requires: ["Glasses Book"],
-                  column: "H"
+                  column: "I"
               },
               {
                   name: "Completed Sudoku",
                   requires: [],
-                  column: "I"
+                  column: "J"
               },
               {
                   name: "Wall Safe",
                   requires: ["Computer Login", "Completed Sudoku"],
-                  column: "J"
+                  column: "K"
               },
               {
                   name: "Key Briefcase",
                   requires: ["Wall Safe"],
-                  column: "K"
+                  column: "L"
               },
               {
                   name: "Hang Letters",
                   requires: ["Wall Safe"],
-                  column: "L"
+                  column: "M"
               },
               {
                   name: "414 Briefcase",
                   requires: ["Key Briefcase", "Dice Lock", "Macy Lock", "Directional Lock"],
-                  column: "M"
+                  column: "N"
               },
               {
                   name: "Place Pot And Gun",
                   requires: ["414 Briefcase"],
-                  column: "N"
+                  column: "O"
               },
               {
                   name: "5123 Door",
                   requires: ["414 Briefcase"],
-                  column: "O"
+                  column: "P"
               },
               {
                   name: "Get Correct Final Code",
                   requires: ["5123 Door", "Hang Letters", "Place Pot And Gun"],
-                  column: "P"
+                  column: "Q"
               },
               {
                   name: "Open Safe",
                   requires: ["Get Correct Final Code"],
-                  column: "Q"
+                  column: "R"
               }
         ],
         sounds: [
@@ -771,72 +771,72 @@ const rooms = {
               {
                   name: "Coolant Lock",
                   requires: [],
-                  column: "D"
+                  column: "E"
               },
               {
                   name: "Water Bottle",
                   requires: [],
-                  column: "E"
+                  column: "F"
               },
               {
                   name: "Fire Box",
                   requires: ["Water Bottle"],
-                  column: "F"
+                  column: "G"
               },
               {
                   name: "Coin Capsule",
                   requires: [],
-                  column: "G"
+                  column: "H"
               },
               {
                   name: "Coin Lock",
                   requires: ["Coin Capsule"],
-                  column: "H"
+                  column: "I"
               },
               {
                   name: "Wire Lock",
                   requires: ["Fire Box"],
-                  column: "I"
+                  column: "J"
               },
               {
                   name: "Boron Lock",
                   requires: ["Coolant Lock"],
-                  column: "J"
+                  column: "K"
               },
               {
                   name: "Spare Key",
                   requires: [],
-                  column: "K"
+                  column: "L"
               },
               {
                   name: "Entered Reactor Chamber",
                   requires: ["Spare Key", "Boron Lock", "Wire Lock", "Coin Lock"],
-                  column: "L"
+                  column: "M"
               },
               {
                   name: "Take Bolts Off",
                   requires: ["Entered Reactor Chamber"],
-                  column: "M"
+                  column: "N"
               },
               {
                   name: "Spills Cryptx",
                   requires: ["Take Bolts Off"],
-                  column: "N"
+                  column: "O"
               },
               {
                   name: "Fingerprint Safe",
                   requires: ["Spills Cryptx"],
-                  column: "O"
+                  column: "P"
               },
               {
                   name: "Safe On Desk",
                   requires: ["Fingerprint Safe"],
-                  column: "P"
+                  column: "Q"
               },
               {
                   name: "Exit Door",
                   requires: ["Safe On Desk"],
-                  column: "Q"
+                  column: "R"
               }
         ],
         sounds: [
@@ -870,82 +870,82 @@ const rooms = {
               {
                   name: "Right Sarcophagus",
                   requires: [],
-                  column: "D"
+                  column: "E"
               },
               {
                   name: "Unlock Dowels",
                   requires: ["Right Sarcophagus"],
-                  column: "E"
+                  column: "F"
               },
               {
                   name: "Open Altar",
                   requires: ["Unlock Dowels"],
-                  column: "F"
+                  column: "G"
               },
               {
                   name: "Finish The Translated Alphabet",
                   requires: ["Open Altar"],
-                  column: "G"
+                  column: "H"
               },
               {
                   name: "Translate Leather",
                   requires: ["Finish The Translated Alphabet"],
-                  column: "H"
+                  column: "I"
               },
               {
                   name: "Translate Corner",
                   requires: ["Finish The Translated Alphabet"],
-                  column: "I"
+                  column: "J"
               },
               {
                   name: "Place Pharaoh",
                   requires: ["Translate Leather"],
-                  column: "J"
+                  column: "K"
               },
               {
                   name: "Open Secret Door",
                   requires: ["Place Pharaoh"],
-                  column: "K"
+                  column: "L"
               },
               {
                   name: "Place Lioness",
                   requires: ["Open Secret Door", "Translate Corner"],
-                  column: "L"
+                  column: "M"
               },
               {
                   name: "Open Locked Box",
                   requires: ["Open Secret Door"],
-                  column: "M"
+                  column: "N"
               },
               {
                   name: "Shine Blacklight At Anubis Idol",
                   requires: ["Open Secret Door"],
-                  column: "N"
+                  column: "O"
               },
               {
                   name: "Place Anubis",
                   requires: ["Shine Blacklight At Anubis Idol"],
-                  column: "O"
+                  column: "P"
               },
               {
                   name: "Complete Map Puzzle",
                   requires: ["Open Secret Door"],
-                  column: "P"
+                  column: "Q"
               },
               {
                   name: "Complete Directions Puzzle",
                   requires: ["Open Secret Door"],
-                  column: "Q"
+                  column: "R"
               },
               {
                   name: "Place Falcon",
                   requires: ["Complete Map Puzzle"],
-                  column: "R"
+                  column: "S"
               },
               {
                   name: "Place Horus",
                   requires: ["Place Anubis", "Complete Directions Puzzle"],
-                  column: "S"
+                  column: "T"
               }
         ],
         sounds: [
