@@ -477,81 +477,72 @@ body {
 }
 
 /* =========================================================
-   SUBMIT PANEL SCREEN
+   SUBMIT PANEL (DRAGGABLE)
    ========================================================= */
 
 #submitPanel {
   display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.85);
-  justify-content: center;
-  align-items: center;
-  z-index: 10000;
+  position: absolute;
+  width: 320px;
+  bottom: 30px;
+  left: calc(50% - 160px);
+  z-index: 10;
 }
 
 #submitContainer {
-  background: #222;
-  border: 3px solid #777;
-  border-radius: 15px;
-  padding: 30px;
-  width: 400px;
+  background: rgba(0, 0, 0, 0.9);
+  border-radius: 0 0 12px 12px;
+  padding: 15px;
   color: white;
-  text-align: center;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-}
-
-#submitContainer h2 {
-  margin-top: 0;
-  color: #60A080;
 }
 
 #submitContainer .inputGroup {
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   text-align: left;
 }
 
 #submitContainer label {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   font-weight: bold;
+  font-size: 14px;
 }
 
 #submitContainer input[type="text"] {
   width: 100%;
-  padding: 10px;
+  padding: 8px;
   border: 2px solid #555;
   border-radius: 6px;
-  background: #111;
+  background: #222;
   color: white;
-  font-size: 16px;
+  font-size: 14px;
 }
 
 #submitContainer .radioGroup {
   text-align: left;
-  margin-bottom: 25px;
+  margin-bottom: 20px;
 }
 
 #submitContainer .radioGroup label {
   font-weight: normal;
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 8px;
+  margin-bottom: 8px;
   cursor: pointer;
+  font-size: 13px;
 }
 
 #submitContainer button.submitBtn {
+  display: block;
   width: 100%;
-  padding: 12px;
-  background: #60A080;
-  border: none;
+  padding: 10px;
+  border: 2px solid #777;
   border-radius: 6px;
+  background: #60A080;
   color: white;
-  font-size: 18px;
   font-weight: bold;
   cursor: pointer;
-  transition: 0.2s;
 }
 
 #submitContainer button.submitBtn:hover {
@@ -1142,32 +1133,27 @@ function checkRoomCompletion() {
     if (!currentRoom) return;
     const room = rooms[currentRoom];
     
-    // Check if every puzzle in the current room has been completed
     const allCompleted = room.puzzles.every(p => completedPuzzles.includes(p.name));
 
     if (allCompleted) {
-        // Stop the timer using your existing pauseTimer() function
         pauseTimer();
 
-        // Show the submit panel
-        document.getElementById("submitPanel").style.display = "flex";
+        // Show the draggable submit panel
+        document.getElementById("submitPanel").style.display = "block";
     }
 }
 
 function submitRoomData() {
-    const groupName = document.getElementById("groupNameInput").value;
+    const submitName = document.getElementById("submitNameInput").value;
     const selectedOption = document.querySelector('input[name="completionStatus"]:checked').value;
 
-    console.log("Group Name:", groupName);
+    console.log("Your Name:", submitName);
     console.log("Status:", selectedOption);
     console.log("Completion Times:", puzzleCompletionTimes);
 
-    // Placeholder for your future Google Spreadsheet integration:
-    // sendDataToGoogleSheet({ name: groupName, status: selectedOption, times: puzzleCompletionTimes });
-
-    alert("Data recorded locally! (Google Spreadsheet hook goes here later).");
+    alert("Data recorded locally!");
     
-    // Hide the panel or reset if needed
+    // Hide the panel after submitting
     document.getElementById("submitPanel").style.display = "none";
 }
   
@@ -2349,7 +2335,8 @@ function initDragging() {
         "cameraPanel1",
         "cameraPanel2",
         "audioPanel",
-        "puzzlePanel"
+        "puzzlePanel",
+        "submitPanel"
     ];
 
 
@@ -2496,29 +2483,6 @@ window.addEventListener(
 
 </div>
 
-<!-- =======================================================
-     SUBMIT PANEL
-     ======================================================= -->
-
-<div id="submitPanel">
-    <div id="submitContainer">
-        <h2>Room Completed!</h2>
-        
-        <div class="inputGroup">
-            <label for="groupNameInput">Group Name:</label>
-            <input type="text" id="groupNameInput" placeholder="Enter group name...">
-        </div>
-
-        <div class="radioGroup">
-            <label><input type="radio" name="completionStatus" value="no_help" checked> Group got out with no help</label>
-            <label><input type="radio" name="completionStatus" value="with_help"> Group got out with help</label>
-            <label><input type="radio" name="completionStatus" value="would_not_without_help"> Group wouldn't have gotten out without help</label>
-            <label><input type="radio" name="completionStatus" value="did_not_get_out"> Group did not get out</label>
-        </div>
-
-        <button class="submitBtn" onclick="submitRoomData()">Submit</button>
-    </div>
-</div>
 
 <!-- =======================================================
      MAIN CONTROLLER
@@ -2791,6 +2755,40 @@ window.addEventListener(
     </div>
 
 </div>
+
+  <!-- ===================================================
+         SUBMIT PANEL
+         =================================================== -->
+
+    <div
+        id="submitPanel"
+        class="draggablePanel"
+    >
+
+        <div class="dragHandle">
+            SUBMIT ROOM
+        </div>
+
+
+        <div id="submitContainer">
+
+            <div class="inputGroup">
+                <label for="submitNameInput">Your Name:</label>
+                <input type="text" id="submitNameInput" placeholder="Enter your name...">
+            </div>
+
+            <div class="radioGroup">
+                <label><input type="radio" name="completionStatus" value="no_help" checked> Group got out with no help</label>
+                <label><input type="radio" name="completionStatus" value="with_help"> Group got out with help</label>
+                <label><input type="radio" name="completionStatus" value="would_not_without_help"> Group wouldn't have gotten out without help</label>
+                <label><input type="radio" name="completionStatus" value="did_not_get_out"> Group did not get out</label>
+            </div>
+
+            <button class="submitBtn" onclick="submitRoomData()">Submit</button>
+
+        </div>
+
+    </div>
 
 </div>
 
