@@ -671,59 +671,73 @@ const rooms = {
         puzzles: [
               {
                   name: "Dice Lock",
-                  requires: []
+                  requires: [],
+                  column: "D"
               },
               {
                   name: "Macy Lock",
-                  requires: []
+                  requires: [],
+                  column: "E"
               },
               {
                   name: "Directional Lock",
-                  requires: []
+                  requires: [],
+                  column: "F"
               },
               {
                   name: "Glasses Book",
-                  requires: []
+                  requires: [],
+                  column: "G"
               },
               {
                   name: "Computer Login",
-                  requires: ["Glasses Book"]
+                  requires: ["Glasses Book"],
+                  column: "H"
               },
               {
                   name: "Completed Sudoku",
-                  requires: []
+                  requires: [],
+                  column: "I"
               },
               {
                   name: "Wall Safe",
-                  requires: ["Computer Login", "Completed Sudoku"]
+                  requires: ["Computer Login", "Completed Sudoku"],
+                  column: "J"
               },
               {
                   name: "Key Briefcase",
-                  requires: ["Wall Safe"]
+                  requires: ["Wall Safe"],
+                  column: "K"
               },
               {
                   name: "Hang Letters",
-                  requires: ["Wall Safe"]
+                  requires: ["Wall Safe"],
+                  column: "L"
               },
               {
                   name: "414 Briefcase",
-                  requires: ["Key Briefcase", "Dice Lock", "Macy Lock", "Directional Lock"]
+                  requires: ["Key Briefcase", "Dice Lock", "Macy Lock", "Directional Lock"],
+                  column: "M"
               },
               {
                   name: "Place Pot And Gun",
-                  requires: ["414 Briefcase"]
+                  requires: ["414 Briefcase"],
+                  column: "N"
               },
               {
                   name: "5123 Door",
-                  requires: ["414 Briefcase"]
+                  requires: ["414 Briefcase"],
+                  column: "O"
               },
               {
                   name: "Get Correct Final Code",
-                  requires: ["5123 Door", "Hang Letters", "Place Pot And Gun"]
+                  requires: ["5123 Door", "Hang Letters", "Place Pot And Gun"],
+                  column: "P"
               },
               {
                   name: "Open Safe",
-                  requires: ["Get Correct Final Code"]
+                  requires: ["Get Correct Final Code"],
+                  column: "Q"
               }
         ],
         sounds: [
@@ -756,59 +770,73 @@ const rooms = {
         puzzles: [
               {
                   name: "Coolant Lock",
-                  requires: []
+                  requires: [],
+                  column: "D"
               },
               {
                   name: "Water Bottle",
-                  requires: []
+                  requires: [],
+                  column: "E"
               },
               {
                   name: "Fire Box",
-                  requires: ["Water Bottle"]
+                  requires: ["Water Bottle"],
+                  column: "F"
               },
               {
                   name: "Coin Capsule",
-                  requires: []
+                  requires: [],
+                  column: "G"
               },
               {
                   name: "Coin Lock",
-                  requires: ["Coin Capsule"]
+                  requires: ["Coin Capsule"],
+                  column: "H"
               },
               {
                   name: "Wire Lock",
-                  requires: ["Fire Box"]
+                  requires: ["Fire Box"],
+                  column: "I"
               },
               {
                   name: "Boron Lock",
-                  requires: ["Coolant Lock"]
+                  requires: ["Coolant Lock"],
+                  column: "J"
               },
               {
                   name: "Spare Key",
-                  requires: []
+                  requires: [],
+                  column: "K"
               },
               {
                   name: "Entered Reactor Chamber",
-                  requires: ["Spare Key", "Boron Lock", "Wire Lock", "Coin Lock"]
+                  requires: ["Spare Key", "Boron Lock", "Wire Lock", "Coin Lock"],
+                  column: "L"
               },
               {
                   name: "Take Bolts Off",
-                  requires: ["Entered Reactor Chamber"]
+                  requires: ["Entered Reactor Chamber"],
+                  column: "M"
               },
               {
                   name: "Spills Cryptx",
-                  requires: ["Take Bolts Off"]
+                  requires: ["Take Bolts Off"],
+                  column: "N"
               },
               {
                   name: "Fingerprint Safe",
-                  requires: ["Spills Cryptx"]
+                  requires: ["Spills Cryptx"],
+                  column: "O"
               },
               {
                   name: "Safe On Desk",
-                  requires: ["Fingerprint Safe"]
+                  requires: ["Fingerprint Safe"],
+                  column: "P"
               },
               {
                   name: "Exit Door",
-                  requires: ["Safe On Desk"]
+                  requires: ["Safe On Desk"],
+                  column: "Q"
               }
         ],
         sounds: [
@@ -841,67 +869,83 @@ const rooms = {
         puzzles: [
               {
                   name: "Right Sarcophagus",
-                  requires: []
+                  requires: [],
+                  column: "D"
               },
               {
                   name: "Unlock Dowels",
-                  requires: ["Right Sarcophagus"]
+                  requires: ["Right Sarcophagus"],
+                  column: "E"
               },
               {
                   name: "Open Altar",
-                  requires: ["Unlock Dowels"]
+                  requires: ["Unlock Dowels"],
+                  column: "F"
               },
               {
                   name: "Finish The Translated Alphabet",
-                  requires: ["Open Altar"]
+                  requires: ["Open Altar"],
+                  column: "G"
               },
               {
                   name: "Translate Leather",
-                  requires: ["Finish The Translated Alphabet"]
+                  requires: ["Finish The Translated Alphabet"],
+                  column: "H"
               },
               {
                   name: "Translate Corner",
-                  requires: ["Finish The Translated Alphabet"]
+                  requires: ["Finish The Translated Alphabet"],
+                  column: "I"
               },
               {
                   name: "Place Pharaoh",
-                  requires: ["Translate Leather"]
+                  requires: ["Translate Leather"],
+                  column: "J"
               },
               {
                   name: "Open Secret Door",
-                  requires: ["Place Pharaoh"]
+                  requires: ["Place Pharaoh"],
+                  column: "K"
               },
               {
                   name: "Place Lioness",
-                  requires: ["Open Secret Door", "Translate Corner"]
+                  requires: ["Open Secret Door", "Translate Corner"],
+                  column: "L"
               },
               {
                   name: "Open Locked Box",
-                  requires: ["Open Secret Door"]
+                  requires: ["Open Secret Door"],
+                  column: "M"
               },
               {
                   name: "Shine Blacklight At Anubis Idol",
-                  requires: ["Open Secret Door"]
+                  requires: ["Open Secret Door"],
+                  column: "N"
               },
               {
                   name: "Place Anubis",
-                  requires: ["Shine Blacklight At Anubis Idol"]
+                  requires: ["Shine Blacklight At Anubis Idol"],
+                  column: "O"
               },
               {
                   name: "Complete Map Puzzle",
-                  requires: ["Open Secret Door"]
+                  requires: ["Open Secret Door"],
+                  column: "P"
               },
               {
                   name: "Complete Directions Puzzle",
-                  requires: ["Open Secret Door"]
+                  requires: ["Open Secret Door"],
+                  column: "Q"
               },
               {
                   name: "Place Falcon",
-                  requires: ["Complete Map Puzzle"]
+                  requires: ["Complete Map Puzzle"],
+                  column: "R"
               },
               {
                   name: "Place Horus",
-                  requires: ["Place Anubis", "Complete Directions Puzzle"]
+                  requires: ["Place Anubis", "Complete Directions Puzzle"],
+                  column: "S"
               }
         ],
         sounds: [
@@ -1154,15 +1198,43 @@ function submitRoomData() {
     const finishedTimeString = document.getElementById("finishedTimeInput").value;
     const selectedOption = document.querySelector('input[name="completionStatus"]:checked').value;
 
-    console.log("Your Name:", submitName);
-    console.log("Finished Time (Edited/Final):", finishedTimeString);
-    console.log("Status:", selectedOption);
-    console.log("All Puzzle Completion Times:", puzzleCompletionTimes);
+    // Build a map of column letters to completion times based on the room configuration
+    const room = rooms[currentRoom];
+    const puzzleColumnData = {};
 
-    alert("Data recorded locally with final time: " + finishedTimeString);
-    
-    // Hide the panel after submitting
-    document.getElementById("submitPanel").style.display = "none";
+    room.puzzles.forEach(puzzle => {
+        if (puzzle.column && puzzleCompletionTimes[puzzle.name] !== undefined) {
+            puzzleColumnData[puzzle.column] = puzzleCompletionTimes[puzzle.name];
+        }
+    });
+
+    const payload = {
+        name: submitName || "Anonymous",
+        room: room.name, // Sends "Heist", "Reactor", or "Egyptian"
+        finishedTime: finishedTimeString,
+        status: selectedOption,
+        puzzleColumns: puzzleColumnData // Sends something like { "D": 1820, "E": 1750, ... }
+    };
+
+    // REPLACE THIS URL with your actual Google Apps Script Web App URL
+    const webAppUrl = "https://script.google.com/macros/s/AKfycbxu7gLdoNdFGrmXPeevBAs3sDInXAlj-J-V1TE77HAmQOAKZC9N27IgvKKhkGk4uVvW/exec";
+
+    fetch(webAppUrl, {
+        method: "POST",
+        mode: "no-cors",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(() => {
+        alert("Successfully submitted to Google Sheets!");
+        document.getElementById("submitPanel").style.display = "none";
+    })
+    .catch(error => {
+        console.error("Error submitting data:", error);
+        alert("There was an error saving your data.");
+    });
 }
   
 function completePuzzle(puzzleName) {
