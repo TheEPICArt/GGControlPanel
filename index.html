@@ -475,6 +475,90 @@ body {
     font-size: 12px;
     font-weight: bold;
 }
+
+/* =========================================================
+   SUBMIT PANEL SCREEN
+   ========================================================= */
+
+#submitPanel {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+}
+
+#submitContainer {
+  background: #222;
+  border: 3px solid #777;
+  border-radius: 15px;
+  padding: 30px;
+  width: 400px;
+  color: white;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+}
+
+#submitContainer h2 {
+  margin-top: 0;
+  color: #60A080;
+}
+
+#submitContainer .inputGroup {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+#submitContainer label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+#submitContainer input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid #555;
+  border-radius: 6px;
+  background: #111;
+  color: white;
+  font-size: 16px;
+}
+
+#submitContainer .radioGroup {
+  text-align: left;
+  margin-bottom: 25px;
+}
+
+#submitContainer .radioGroup label {
+  font-weight: normal;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+#submitContainer button.submitBtn {
+  width: 100%;
+  padding: 12px;
+  background: #60A080;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+#submitContainer button.submitBtn:hover {
+  background: white;
+  color: #60A080;
+}
+  
 /* =========================================================
    OTHER ORIGINAL STYLES
    ========================================================= */
@@ -1054,6 +1138,39 @@ function isPuzzleAvailable(puzzle) {
    COMPLETE PUZZLE
    ========================================================= */
 
+function checkRoomCompletion() {
+    if (!currentRoom) return;
+    const room = rooms[currentRoom];
+    
+    // Check if every puzzle in the current room has been completed
+    const allCompleted = room.puzzles.every(p => completedPuzzles.includes(p.name));
+
+    if (allCompleted) {
+        // Stop the timer using your existing pauseTimer() function
+        pauseTimer();
+
+        // Show the submit panel
+        document.getElementById("submitPanel").style.display = "flex";
+    }
+}
+
+function submitRoomData() {
+    const groupName = document.getElementById("groupNameInput").value;
+    const selectedOption = document.querySelector('input[name="completionStatus"]:checked').value;
+
+    console.log("Group Name:", groupName);
+    console.log("Status:", selectedOption);
+    console.log("Completion Times:", puzzleCompletionTimes);
+
+    // Placeholder for your future Google Spreadsheet integration:
+    // sendDataToGoogleSheet({ name: groupName, status: selectedOption, times: puzzleCompletionTimes });
+
+    alert("Data recorded locally! (Google Spreadsheet hook goes here later).");
+    
+    // Hide the panel or reset if needed
+    document.getElementById("submitPanel").style.display = "none";
+}
+  
 function completePuzzle(puzzleName) {
 
     if (!currentRoom) return;
@@ -1157,6 +1274,8 @@ function completePuzzle(puzzleName) {
      */
 
     renderPuzzles();
+
+    checkRoomCompletion();
 
 }
 
@@ -2377,6 +2496,29 @@ window.addEventListener(
 
 </div>
 
+<!-- =======================================================
+     SUBMIT PANEL
+     ======================================================= -->
+
+<div id="submitPanel">
+    <div id="submitContainer">
+        <h2>Room Completed!</h2>
+        
+        <div class="inputGroup">
+            <label for="groupNameInput">Group Name:</label>
+            <input type="text" id="groupNameInput" placeholder="Enter group name...">
+        </div>
+
+        <div class="radioGroup">
+            <label><input type="radio" name="completionStatus" value="no_help" checked> Group got out with no help</label>
+            <label><input type="radio" name="completionStatus" value="with_help"> Group got out with help</label>
+            <label><input type="radio" name="completionStatus" value="would_not_without_help"> Group wouldn't have gotten out without help</label>
+            <label><input type="radio" name="completionStatus" value="did_not_get_out"> Group did not get out</label>
+        </div>
+
+        <button class="submitBtn" onclick="submitRoomData()">Submit</button>
+    </div>
+</div>
 
 <!-- =======================================================
      MAIN CONTROLLER
