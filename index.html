@@ -744,17 +744,20 @@ const rooms = {
             {
                 name: "Suspense",
                 file: "suspense.mp3",
-                loop: true
+                loop: true,
+                pauses: true
             },
             {
                 name: "Mission Impossible Theme",
                 file: "theme.mp3",
-                loop: false
+                loop: false,
+                pauses: false
             },
             {
                 name: "Alarm",
                 file: "alarm.mp3",
-                loop: true
+                loop: true,
+                pauses: false
             }
         ],
         links: []
@@ -845,18 +848,21 @@ const rooms = {
                 name: "Coolant Shutdown Switch",
                 file: "coolant.mp3",
                 loop: false,
-                id: 3
+                id: 3,
+                pauses: false
             },
             {
                 name: "Reactor Shutdown Lever",
                 file: "power_down.mp3",
                 loop: false,
-                id: 2
+                id: 2,
+                pauses: false
             },
             {
                 name: "10 Minute Timer",
                 file: "timer.mp3",
-                loop: false
+                loop: false,
+                pauses: false
             }
         ],
         links: [
@@ -969,32 +975,38 @@ const rooms = {
             {
                 name: "Thunder Sounds",
                 file: "thunder.mp3",
-                loop: false
+                loop: false,
+                pauses: false
             },
             {
                 name: "Correct Idol",
                 file: "idol_correct.mp3",
-                loop: false
+                loop: false,
+                pauses: false
             },
             {
                 name: "Incorrect Idol",
                 file: "idol_incorrect.mp3",
-                loop: false
+                loop: false,
+                pauses: false
             },
             {
                 name: "Egyptian Music",
                 file: "intro-song.mp3",
-                loop: false
+                loop: false,
+                pauses: false
             },
             {
                 name: "Indiana Jones Theme",
                 file: "indiana-jones.mp3",
-                loop: false
+                loop: false,
+                pauses: false
             },
             {
                 name: "Grinding And Birds",
                 file: "grinding-and-birds.mp3",
-                loop: false
+                loop: false,
+                pauses: false
             }
         ],
         links: [
@@ -1100,10 +1112,11 @@ function loadAudio(room) {
 
         const audio =
             document.createElement("audio");
-
+        
         audio.controls = true;
         audio.src = sound.file;
-
+        audio.dataset.pauses = sound.pauses;
+        
         if (sound.loop) {
             audio.loop = true;
         }
@@ -1120,7 +1133,7 @@ function loadAudio(room) {
                 .querySelectorAll("#audioPlayer audio")
                 .forEach(other => {
         
-                    if (other !== audio) {
+                    if (other !== audio && other.dataset.pauses === "true") {
                         other.pause();
                         other.currentTime = 0;
                     }
