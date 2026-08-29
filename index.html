@@ -756,7 +756,8 @@ const rooms = {
                 file: "alarm.mp3",
                 loop: true
             }
-        ]
+        ],
+        links: []
     },
 
 
@@ -843,17 +844,33 @@ const rooms = {
             {
                 name: "Coolant Shutdown Switch",
                 file: "coolant.mp3",
-                loop: false
+                loop: false,
+                id: 3
             },
             {
                 name: "Reactor Shutdown Lever",
                 file: "power_down.mp3",
-                loop: false
+                loop: false,
+                id: 2
             },
             {
                 name: "10 Minute Timer",
                 file: "timer.mp3",
                 loop: false
+            }
+        ],
+        links: [
+            {
+                link: "https://science-fiction.ambient-mixer.com/gg-reactor-room-ambience",
+                id: 1
+            },
+            {
+                link: "https://science-fiction.ambient-mixer.com/gg-reactor-room-reactor-fx",
+                id: 2
+            },
+            {
+                link: "https://science-fiction.ambient-mixer.com/gg-reactor-room-coolant-fx",
+                id: 3
             }
         ]
     },
@@ -979,6 +996,12 @@ const rooms = {
                 file: "grinding-and-birds.mp3",
                 loop: false
             }
+        ],
+        links: [
+            {
+                link: "https://fun-other.ambient-mixer.com/gg-egyptian-tomb",
+                id: 1
+            }
         ]
     }
 
@@ -990,6 +1013,7 @@ const rooms = {
    ========================================================= */
 
 let currentRoom = null;
+let openedLinks = {};
 
 var task;
 var panTiltDuration = 500;
@@ -1016,6 +1040,17 @@ function selectRoom(roomKey) {
     }
 
     currentRoom = roomKey;
+
+    // Open all room links in new tabs
+    openedLinks = {};
+
+    room.links.forEach(link => {
+        const tab = window.open(link.link, "_blank");
+
+        if (link.id !== undefined) {
+            openedLinks[link.id] = tab;
+        }
+    });
 
     ip1 = room.ip1;
     ip2 = room.ip2;
@@ -1080,20 +1115,28 @@ function loadAudio(room) {
          */
 
         audio.addEventListener("play", () => {
-
+        
             document
                 .querySelectorAll("#audioPlayer audio")
                 .forEach(other => {
-
+        
                     if (other !== audio) {
-
                         other.pause();
                         other.currentTime = 0;
-
                     }
-
+        
                 });
-
+        
+            // Close the corresponding tab
+            if (sound.id !== undefined) {
+                const tab = openedLinks[sound.id];
+        
+                if (tab && !tab.closed) {
+                    tab.close();
+                    delete openedLinks[sound.id];
+                }
+            }
+        
         });
 
 
