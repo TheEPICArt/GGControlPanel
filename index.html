@@ -549,6 +549,35 @@ body {
   background: white;
   color: #60A080;
 }
+
+#mummyPanel {
+    left: 30px;
+    top: 30px;
+    width: 180px;
+    display: none;
+}
+
+#mummyButtonContainer {
+    background: rgba(0, 0, 0, 0.9);
+    border-radius: 0 0 12px 12px;
+    padding: 12px;
+}
+
+#mummyButton {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #777;
+    border-radius: 6px;
+    background: #60A080;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#mummyButton:hover {
+    background: white;
+    color: #60A080;
+}
   
 /* =========================================================
    OTHER ORIGINAL STYLES
@@ -1053,6 +1082,9 @@ function selectRoom(roomKey) {
 
     currentRoom = roomKey;
 
+    document.getElementById("mummyPanel").style.display =
+    roomKey === "egyptian" ? "block" : "none";
+
     // Open all room links in new tabs
     openedLinks = {};
 
@@ -1178,6 +1210,15 @@ let puzzleCompletionTimes = {};
 
 let completedDropdownOpen = false;
 
+function playRandomMummy() {
+    const number = Math.floor(Math.random() * 7) + 1;
+
+    const audio = new Audio(`mummy${number}.mp3`);
+
+    audio.play();
+}
+
+document.getElementById("mummyButton").addEventListener("click", playRandomMummy);
 
 /* =========================================================
    RESET PUZZLES
@@ -2472,7 +2513,8 @@ function initDragging() {
         "cameraPanel2",
         "audioPanel",
         "puzzlePanel",
-        "submitPanel"
+        "submitPanel",
+        "mummyPanel"
     ];
 
 
@@ -2932,6 +2974,21 @@ window.addEventListener(
 
     </div>
 
+    <div
+    id="mummyPanel"
+    class="draggablePanel"
+>
+    <div class="dragHandle">
+        MUMMY
+    </div>
+
+    <div id="mummyButtonContainer">
+        <button id="mummyButton">
+            Play Mummy
+        </button>
+    </div>
+</div>
+  
 </div>
 
 <!-- =======================================================
