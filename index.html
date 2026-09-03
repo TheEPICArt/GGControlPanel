@@ -1218,8 +1218,6 @@ function playRandomMummy() {
     audio.play();
 }
 
-document.getElementById("mummyButton").addEventListener("click", playRandomMummy);
-
 /* =========================================================
    RESET PUZZLES
    ========================================================= */
@@ -2552,6 +2550,7 @@ function initPage() {
         "controller"
     ).style.display = "none";
 
+    document.getElementById("mummyButton").addEventListener("click", playRandomMummy);
 
     initDragging();
 
@@ -2979,12 +2978,12 @@ window.addEventListener(
     class="draggablePanel"
 >
     <div class="dragHandle">
-        MUMMY
+        MUMMY BUTTON
     </div>
 
     <div id="mummyButtonContainer">
         <button id="mummyButton">
-            Play Mummy
+            
         </button>
     </div>
 </div>
